@@ -198,6 +198,17 @@ class EditTicketPage extends Component {
                   module={MODULE_NAME}
                 />
                 )}
+                {stateEdited.reporterTypeName === 'user' && (
+                <Grid item xs={6} className={classes.item}>
+                  <PublishedComponent
+                    pubRef="admin.UserPicker"
+                    value={reporter}
+                    module="core"
+                    onChange={(v) => this.updateAttribute('reporter', v)}
+                    readOnly
+                  />
+                </Grid>
+                )}
               </Grid>
             </Paper>
             )}
