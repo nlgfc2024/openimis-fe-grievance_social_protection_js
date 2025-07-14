@@ -313,7 +313,7 @@ class AddTicketPage extends Component {
                     pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                     value={stateEdited.category}
                     onChange={(v) => this.updateAttribute('category', v)}
-                    required
+                    required={false}
                     readOnly={isSaved}
                   />
                 </Grid>
@@ -322,7 +322,7 @@ class AddTicketPage extends Component {
                     pubRef="grievanceSocialProtection.FlagPicker"
                     value={stateEdited.flags}
                     onChange={(v) => this.updateAttribute('flags', v)}
-                    required
+                    required={false}
                     readOnly={isSaved}
                   />
                 </Grid>
@@ -370,7 +370,7 @@ class AddTicketPage extends Component {
                     color="primary"
                     onClick={this.save}
                     disabled={
-                      (!stateEdited.channel || !stateEdited.flags || !stateEdited.title || isSaved)
+                      (!stateEdited.channel || !stateEdited.title || isSaved)
                       || ((
                         stateEdited.reporterType === 'individual'
                         || stateEdited.reporterType === 'beneficiary'
