@@ -4,7 +4,8 @@
 import React from 'react';
 import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
-import { ListAlt, AddCircleOutline } from '@material-ui/icons';
+import ListAlt from '@mui/icons-material/ListAlt';
+import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
 import { formatMessage, MainMenuContribution, withModulesManager } from '@openimis/fe-core';
 import {
   GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY,

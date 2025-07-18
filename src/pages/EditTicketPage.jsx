@@ -6,8 +6,8 @@
 /* eslint-disable react/destructuring-assignment */
 import React, { Component, useRef } from 'react';
 import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
-import PrintIcon from '@material-ui/icons/Print';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import PrintIcon from '@mui/icons-material/Print';
+import { withTheme, withStyles } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
@@ -17,7 +17,7 @@ import {
   Divider,
   IconButton,
   Button,
-} from '@material-ui/core';
+} from '@mui/material';
 import {
   journalize,
   TextInput,
@@ -25,7 +25,7 @@ import {
   FormattedMessage,
 } from '@openimis/fe-core';
 import _ from 'lodash';
-import { Save } from '@material-ui/icons';
+import Save from '@mui/icons-material/Save';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';

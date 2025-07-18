@@ -3,13 +3,13 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
   Grid, Paper, Typography, Divider, IconButton,
-} from '@material-ui/core';
-import { Save } from '@material-ui/icons';
+} from '@mui/material';
+import Save from '@mui/icons-material/Save';
 import {
   TextInput, journalize, PublishedComponent, FormattedMessage,
 } from '@openimis/fe-core';
