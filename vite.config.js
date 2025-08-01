@@ -18,6 +18,7 @@ export default defineConfig({
         /^@date-io\/.*/,
         /^@material-ui\/.*/,
         /^@openimis.*/,
+        /^@emotion\/.*/,
         'classnames',
         'clsx',
         'history',

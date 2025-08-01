@@ -4,16 +4,16 @@ import React, {
   forwardRef,
 } from 'react';
 
-import { Divider } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { Divider } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 import {
   useTranslations, useModulesManager,
 } from '@openimis/fe-core';
 import { MODULE_NAME } from '../constants';
 
-const useStyles = makeStyles(() => ({
-  topHeader: {
+const StyledTicketPrintCommentTemplate = styled('div')(() => ({
+  '& .topHeader': {
     display: 'flex',
     justifyContent: 'start',
     alignItems: 'center',
@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
       height: 'auto',
     },
   },
-  printContainer: {
+  '& .printContainer': {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -34,48 +34,47 @@ const useStyles = makeStyles(() => ({
     padding: '20px',
     fontWeight: '500',
   },
-  date: {
+  '& .date': {
     fontSize: '16px',
   },
-  detailsContainer: {
+  '& .detailsContainer': {
     display: 'flex',
     flexDirection: 'column',
     padding: '12px',
     width: '100%',
   },
-  detailRow: {
+  '& .detailRow': {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '4px',
   },
-  detailName: {
+  '& .detailName': {
     fontWeight: '600',
     fontSize: '16px',
     textTransform: 'uppercase',
   },
-  detailValue: {
+  '& .detailValue': {
     fontWeight: '500',
     backgroundColor: '#f5f5f5',
     padding: '6px',
     borderRadius: '8px',
     fontSize: '15px',
   },
-  containerPadding: {
+  '& .containerPadding': {
     padding: '32px',
   },
-  dividerMargin: {
+  '& .dividerMargin': {
     margin: '12px 0',
   },
-  resolutionComment: {
+  '& .resolutionComment': {
     color: '#d9534f',
     fontWeight: 'bold',
   },
 }));
 
 const TicketPrintCommentTemplate = forwardRef(({ ticketComments }, ref) => {
-  const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(modulesManager, MODULE_NAME);
 
@@ -101,38 +100,40 @@ const TicketPrintCommentTemplate = forwardRef(({ ticketComments }, ref) => {
   };
 
   return (
-    <div ref={ref} className={classes.containerPadding}>
-      <div className={classes.topHeader} />
-      <Divider className={classes.dividerMargin} />
-      <div className={classes.detailsContainer}>
-        <div className={classes.detailRow}>
-          <p className={classes.detailName}>{formatMessage('ticket.template.comments')}</p>
-          <div className={classes.detailValue}>
-            {ticketComments?.length > 0 ? (
-              ticketComments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className={comment.isResolution ? classes.resolutionComment : ''}
-                  style={{ marginBottom: '8px' }}
-                >
-                  <strong>
-                    {formatCommenterName(comment.commenterTypeName, comment.commenter)}
-                    :
-                  </strong>
-                  {' '}
-                  {comment.comment}
-                  <div style={{ fontSize: '12px', color: '#777' }}>
-                    {formatDate(comment.dateCreated)}
+    <StyledTicketPrintCommentTemplate>
+      <div ref={ref} className="containerPadding">
+        <div className="topHeader" />
+        <Divider className="dividerMargin" />
+        <div className="detailsContainer">
+          <div className="detailRow">
+            <p className="detailName">{formatMessage('ticket.template.comments')}</p>
+            <div className="detailValue">
+              {ticketComments?.length > 0 ? (
+                ticketComments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className={comment.isResolution ? 'resolutionComment' : ''}
+                    style={{ marginBottom: '8px' }}
+                  >
+                    <strong>
+                      {formatCommenterName(comment.commenterTypeName, comment.commenter)}
+                      :
+                    </strong>
+                    {' '}
+                    {comment.comment}
+                    <div style={{ fontSize: '12px', color: '#777' }}>
+                      {formatDate(comment.dateCreated)}
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p>{formatMessage('ticket.template.noComments')}</p>
-            )}
+                ))
+              ) : (
+                <p>{formatMessage('ticket.template.noComments')}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </StyledTicketPrintCommentTemplate>
   );
 });
 

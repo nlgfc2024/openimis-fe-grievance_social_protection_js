@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import { withTheme, withStyles } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import {
@@ -12,10 +12,10 @@ import TicketSearcher from '../components/TicketSearcher';
 
 import { MODULE_NAME, RIGHT_TICKET_ADD } from '../constants';
 
-const styles = (theme) => ({
-  page: theme.page,
-  fab: theme.fab,
-});
+const StyledTicketsPage = styled('div')(({ theme }) => ({
+  '& .page': theme.page,
+  '& .fab': theme.fab,
+}));
 
 class TicketsPage extends Component {
   onDoubleClick = (ticket, newTab = false) => {
@@ -31,24 +31,26 @@ class TicketsPage extends Component {
   };
 
   render() {
-    const { intl, classes, rights } = this.props;
+    const { intl, rights } = this.props;
 
     return (
-      <div className={classes.page}>
-        <TicketSearcher
-          cacheFiltersKey="ticketPageFiltersCache"
-          onDoubleClick={this.onDoubleClick}
-        />
-        {rights.includes(RIGHT_TICKET_ADD)
-                    && withTooltip(
-                      <div className={classes.fab}>
-                        <Fab color="primary" onClick={this.onAdd}>
-                          <AddIcon />
-                        </Fab>
-                      </div>,
-                      formatMessage(intl, MODULE_NAME, 'addNewticketTooltip'),
-                    )}
-      </div>
+      <StyledTicketsPage>
+        <div className="page">
+          <TicketSearcher
+            cacheFiltersKey="ticketPageFiltersCache"
+            onDoubleClick={this.onDoubleClick}
+          />
+          {rights.includes(RIGHT_TICKET_ADD)
+                        && withTooltip(
+                          <div className="fab">
+                            <Fab color="primary" onClick={this.onAdd}>
+                              <AddIcon />
+                            </Fab>
+                          </div>,
+                          formatMessage(intl, MODULE_NAME, 'addNewticketTooltip'),
+                        )}
+        </div>
+      </StyledTicketsPage>
     );
   }
 }
@@ -60,7 +62,7 @@ const mapStateToProps = (state) => ({
 export default injectIntl(
   withModulesManager(
     withHistory(
-      connect(mapStateToProps)(withTheme(withStyles(styles)(TicketsPage))),
+      connect(mapStateToProps)(TicketsPage),
     ),
   ),
 );

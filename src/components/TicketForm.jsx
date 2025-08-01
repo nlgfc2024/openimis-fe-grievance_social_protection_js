@@ -5,7 +5,7 @@
 import React, { Component, Fragment } from 'react';
 import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import {
   Form, formatMessageWithValues, journalize, ProgressOrError, withModulesManager, formatMessage,
 } from '@openimis/fe-core';

@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
-import { withTheme, withStyles } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
@@ -17,14 +17,14 @@ import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 
-const styles = (theme) => ({
-  paper: theme.paper.paper,
-  tableTitle: theme.table.title,
-  item: theme.paper.item,
-  fullHeight: {
+const StyledAddTicketPage = styled('div')(({ theme }) => ({
+  '& .paper': theme.paper.paper,
+  '& .tableTitle': theme.table.title,
+  '& .item': theme.paper.item,
+  '& .fullHeight': {
     height: '100%',
   },
-});
+}));
 
 class AddTicketPage extends Component {
   constructor(props) {
@@ -86,7 +86,6 @@ class AddTicketPage extends Component {
 
   render() {
     const {
-      classes,
       titleone = ' Ticket.ComplainantInformation',
       titletwo = ' Ticket.DescriptionOfEvents',
       titleParams = { label: EMPTY_STRING },
@@ -100,69 +99,45 @@ class AddTicketPage extends Component {
     } = this.state;
 
     return (
-      <div className={classes.page}>
-        <Grid container>
-          <Grid item xs={12}>
-            <Paper className={classes.paper}>
-              <Grid container className={classes.tableTitle}>
-                <Grid item xs={8} className={classes.tableTitle}>
-                  <Typography>
-                    <FormattedMessage module={MODULE_NAME} id={titleone} values={titleParams} />
-                  </Typography>
+      <StyledAddTicketPage>
+        <div className="page">
+          <Grid container>
+            <Grid item xs={12}>
+              <Paper className="paper">
+                <Grid container className="tableTitle">
+                  <Grid item xs={8} className="tableTitle">
+                    <Typography>
+                      <FormattedMessage module={MODULE_NAME} id={titleone} values={titleParams} />
+                    </Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
-              <Grid container className={classes.item}>
-                <Grid item xs={3} className={classes.item}>
-                  <GrievantTypePicker
-                    module={MODULE_NAME}
-                    label="type"
-                    readOnly={!!stateEdited.id || isSaved}
-                    withNull
-                    value={grievantType?.replace(/\s+/g, '') ?? ''}
-                    onChange={(v) => this.updateTypeOfGrievant('grievantType', v)}
-                    withLabel
-                  />
-                </Grid>
-                {grievantType === 'individual' && (
-                  <>
-                    <Grid item xs={3} className={classes.item}>
-                      <PublishedComponent
-                        pubRef="socialProtection.BenefitPlanPicker"
-                        withNull
-                        label="socialProtection.benefitPlan"
-                        value={benefitPlan}
-                        onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
-                        readOnly={isSaved}
-                      />
-                    </Grid>
-                    <Grid item xs={3} className={classes.item}>
-                      <PublishedComponent
-                        pubRef="individual.IndividualPicker"
-                        value={stateEdited.reporter}
-                        label="Complainant"
-                        onChange={(v) => this.updateAttribute('reporter', v)}
-                        benefitPlan={benefitPlan}
-                        readOnly={isSaved}
-                      />
-                    </Grid>
-                  </>
-                )}
-                {grievantType === 'beneficiary' && (
-                  <>
-                    <Grid item xs={3} className={classes.item}>
-                      <PublishedComponent
-                        pubRef="socialProtection.BenefitPlanPicker"
-                        withNull
-                        label="socialProtection.benefitPlan"
-                        value={benefitPlan}
-                        onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
-                        readOnly={isSaved}
-                      />
-                    </Grid>
-                    {benefitPlan && (
-                      <Grid item xs={3} className={classes.item}>
+                <Grid container className="item">
+                  <Grid item xs={3} className="item">
+                    <GrievantTypePicker
+                      module={MODULE_NAME}
+                      label="type"
+                      readOnly={!!stateEdited.id || isSaved}
+                      withNull
+                      value={grievantType?.replace(/\s+/g, '') ?? ''}
+                      onChange={(v) => this.updateTypeOfGrievant('grievantType', v)}
+                      withLabel
+                    />
+                  </Grid>
+                  {grievantType === 'individual' && (
+                    <>
+                      <Grid item xs={3} className="item">
                         <PublishedComponent
-                          pubRef="socialProtection.BeneficiaryPicker"
+                          pubRef="socialProtection.BenefitPlanPicker"
+                          withNull
+                          label="socialProtection.benefitPlan"
+                          value={benefitPlan}
+                          onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
+                          readOnly={isSaved}
+                        />
+                      </Grid>
+                      <Grid item xs={3} className="item">
+                        <PublishedComponent
+                          pubRef="individual.IndividualPicker"
                           value={stateEdited.reporter}
                           label="Complainant"
                           onChange={(v) => this.updateAttribute('reporter', v)}
@@ -170,223 +145,249 @@ class AddTicketPage extends Component {
                           readOnly={isSaved}
                         />
                       </Grid>
-                    )}
+                    </>
+                  )}
+                  {grievantType === 'beneficiary' && (
+                    <>
+                      <Grid item xs={3} className="item">
+                        <PublishedComponent
+                          pubRef="socialProtection.BenefitPlanPicker"
+                          withNull
+                          label="socialProtection.benefitPlan"
+                          value={benefitPlan}
+                          onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
+                          readOnly={isSaved}
+                        />
+                      </Grid>
+                      {benefitPlan && (
+                        <Grid item xs={3} className="item">
+                          <PublishedComponent
+                            pubRef="socialProtection.BeneficiaryPicker"
+                            value={stateEdited.reporter}
+                            label="Complainant"
+                            onChange={(v) => this.updateAttribute('reporter', v)}
+                            benefitPlan={benefitPlan}
+                            readOnly={isSaved}
+                          />
+                        </Grid>
+                      )}
+                    </>
+                  )}
+                  {grievantType === 'user' && (
+                    <Grid item xs={6} className="item">
+                      <PublishedComponent
+                        pubRef="admin.UserPicker"
+                        value={stateEdited.reporter}
+                        label="Complainant"
+                        onChange={(v) => this.updateAttribute('reporter', v)}
+                        benefitPlan={benefitPlan}
+                        readOnly={isSaved}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+                <Divider />
+                <Grid container className="item">
+                  {grievantType === 'individual' && (
+                  <>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.name"
+                        value={!!stateEdited
+                          && !!stateEdited.reporter
+                          // eslint-disable-next-line max-len
+                          ? `${stateEdited.reporter.firstName} ${stateEdited.reporter.lastName} ${stateEdited.reporter.dob}`
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('name', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.phone"
+                        value={!!stateEdited && !!stateEdited.reporter
+                          ? this.extractFieldFromJsonExt(stateEdited, 'phone')
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('phone', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.email"
+                        value={!!stateEdited && !!stateEdited.reporter
+                          ? this.extractFieldFromJsonExt(stateEdited, 'email')
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('email', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
                   </>
-                )}
-                {grievantType === 'user' && (
-                  <Grid item xs={6} className={classes.item}>
-                    <PublishedComponent
-                      pubRef="admin.UserPicker"
-                      value={stateEdited.reporter}
-                      label="Complainant"
-                      onChange={(v) => this.updateAttribute('reporter', v)}
-                      benefitPlan={benefitPlan}
+                  )}
+                  {grievantType === 'beneficiary' && (
+                  <>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.name"
+                        value={!!stateEdited
+                          && !!stateEdited.reporter
+                          // eslint-disable-next-line max-len
+                          ? `${stateEdited.reporter.individual.firstName} ${stateEdited.reporter.individual.lastName} ${stateEdited.reporter.individual.dob}`
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('name', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.phone"
+                        value={!!stateEdited && !!stateEdited.reporter
+                          ? this.extractFieldFromJsonExt(stateEdited, 'phone')
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('phone', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={4} className="item">
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.email"
+                        value={!!stateEdited && !!stateEdited.reporter
+                          ? this.extractFieldFromJsonExt(stateEdited, 'email')
+                          : EMPTY_STRING}
+                        onChange={(v) => this.updateAttribute('email', v)}
+                        required={false}
+                        readOnly
+                      />
+                    </Grid>
+                  </>
+                  )}
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid container>
+            <Grid item xs={12}>
+              <Paper className="paper">
+                <Grid container className="tableTitle">
+                  <Grid item xs={12} className="tableTitle">
+                    <Typography>
+                      <FormattedMessage module={MODULE_NAME} id={titletwo} values={titleParams} />
+                    </Typography>
+                  </Grid>
+                </Grid>
+                <Divider />
+                <Grid container className="item">
+                  <Grid item xs={6} className="item">
+                    <TextInput
+                      label="ticket.title"
+                      value={stateEdited.title}
+                      onChange={(v) => this.updateAttribute('title', v)}
+                      required
                       readOnly={isSaved}
                     />
                   </Grid>
-                )}
-              </Grid>
-              <Divider />
-              <Grid container className={classes.item}>
-                {grievantType === 'individual' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={!!stateEdited
-                        && !!stateEdited.reporter
-                        // eslint-disable-next-line max-len
-                        ? `${stateEdited.reporter.firstName} ${stateEdited.reporter.lastName} ${stateEdited.reporter.dob}`
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="core.DatePicker"
+                      label="ticket.dateOfIncident"
+                      value={stateEdited.dateOfIncident}
                       required={false}
-                      readOnly
+                      onChange={(v) => this.updateAttribute('dateOfIncident', v)}
+                      readOnly={isSaved}
                     />
                   </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
-                      required={false}
-                      readOnly
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.DropDownCategoryPicker"
+                      value={stateEdited.category}
+                      onChange={(v) => this.updateAttribute('category', v)}
+                      required
+                      readOnly={isSaved}
                     />
                   </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.FlagPicker"
+                      value={stateEdited.flags}
+                      onChange={(v) => this.updateAttribute('flags', v)}
+                      required
+                      readOnly={isSaved}
                     />
                   </Grid>
-                </>
-                )}
-                {grievantType === 'beneficiary' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={!!stateEdited
-                        && !!stateEdited.reporter
-                        // eslint-disable-next-line max-len
-                        ? `${stateEdited.reporter.individual.firstName} ${stateEdited.reporter.individual.lastName} ${stateEdited.reporter.individual.dob}`
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
-                      required={false}
-                      readOnly
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.ChannelPicker"
+                      value={stateEdited.channel}
+                      onChange={(v) => this.updateAttribute('channel', v)}
+                      required
+                      readOnly={isSaved}
                     />
                   </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.TicketPriorityPicker"
+                      value={stateEdited.priority}
+                      onChange={(v) => this.updateAttribute('priority', v)}
                       required={false}
-                      readOnly
+                      readOnly={isSaved}
                     />
                   </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
+                  <Grid item xs={6} className="item">
+                    <PublishedComponent
+                      pubRef="admin.UserPicker"
+                      value={stateEdited.attendingStaff}
+                      module="core"
+                      onChange={(v) => this.updateAttribute('attendingStaff', v)}
+                      readOnly={isSaved}
                     />
                   </Grid>
-                </>
-                )}
-              </Grid>
-            </Paper>
+                  <Grid item xs={12} className="item">
+                    <TextInput
+                      label="ticket.ticketDescription"
+                      value={stateEdited.description}
+                      onChange={(v) => this.updateAttribute('description', v)}
+                      required={false}
+                      readOnly={isSaved}
+                    />
+                  </Grid>
+                  <Grid item xs={11} className="item" />
+                  <Grid item xs={1} className="item">
+                    <IconButton
+                      variant="contained"
+                      component="label"
+                      color="primary"
+                      onClick={this.save}
+                      disabled={
+                        (!stateEdited.channel || !stateEdited.flags || !stateEdited.title || isSaved)
+                        || ((
+                          stateEdited.reporterType === 'individual'
+                          || stateEdited.reporterType === 'beneficiary'
+                          || stateEdited.reporterType === 'user')
+                          && stateEdited.reporter === null
+                        )
+                      }
+                    >
+                      <Save />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
-
-        <Grid container>
-          <Grid item xs={12}>
-            <Paper className={classes.paper}>
-              <Grid container className={classes.tableTitle}>
-                <Grid item xs={12} className={classes.tableTitle}>
-                  <Typography>
-                    <FormattedMessage module={MODULE_NAME} id={titletwo} values={titleParams} />
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Divider />
-              <Grid container className={classes.item}>
-                <Grid item xs={6} className={classes.item}>
-                  <TextInput
-                    label="ticket.title"
-                    value={stateEdited.title}
-                    onChange={(v) => this.updateAttribute('title', v)}
-                    required
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="core.DatePicker"
-                    label="ticket.dateOfIncident"
-                    value={stateEdited.dateOfIncident}
-                    required={false}
-                    onChange={(v) => this.updateAttribute('dateOfIncident', v)}
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="grievanceSocialProtection.DropDownCategoryPicker"
-                    value={stateEdited.category}
-                    onChange={(v) => this.updateAttribute('category', v)}
-                    required
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="grievanceSocialProtection.FlagPicker"
-                    value={stateEdited.flags}
-                    onChange={(v) => this.updateAttribute('flags', v)}
-                    required
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="grievanceSocialProtection.ChannelPicker"
-                    value={stateEdited.channel}
-                    onChange={(v) => this.updateAttribute('channel', v)}
-                    required
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="grievanceSocialProtection.TicketPriorityPicker"
-                    value={stateEdited.priority}
-                    onChange={(v) => this.updateAttribute('priority', v)}
-                    required={false}
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="admin.UserPicker"
-                    value={stateEdited.attendingStaff}
-                    module="core"
-                    onChange={(v) => this.updateAttribute('attendingStaff', v)}
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={12} className={classes.item}>
-                  <TextInput
-                    label="ticket.ticketDescription"
-                    value={stateEdited.description}
-                    onChange={(v) => this.updateAttribute('description', v)}
-                    required={false}
-                    readOnly={isSaved}
-                  />
-                </Grid>
-                <Grid item xs={11} className={classes.item} />
-                <Grid item xs={1} className={classes.item}>
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    color="primary"
-                    onClick={this.save}
-                    disabled={
-                      (!stateEdited.channel || !stateEdited.flags || !stateEdited.title || isSaved)
-                      || ((
-                        stateEdited.reporterType === 'individual'
-                        || stateEdited.reporterType === 'beneficiary'
-                        || stateEdited.reporterType === 'user')
-                        && stateEdited.reporter === null
-                      )
-                    }
-                  >
-                    <Save />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-        </Grid>
-      </div>
+        </div>
+      </StyledAddTicketPage>
     );
   }
 }
@@ -400,4 +401,4 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, journalize }, dispatch);
 
-export default withTheme(withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(AddTicketPage)));
+export default connect(mapStateToProps, mapDispatchToProps)(AddTicketPage);
