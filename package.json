@@ -44,6 +44,7 @@
     "dist"
   ],
   "dependencies": {
+    "rc-cascader": "^3.34.0",
     "react-to-print": "^2.15.1"
   }
 }
