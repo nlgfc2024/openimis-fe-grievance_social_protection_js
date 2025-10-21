@@ -10,70 +10,6 @@ import { useTranslations, useGraphqlQuery } from '@openimis/fe-core';
 const styles = () => ({
   root: {
     width: '100%',
-    '& .rc-cascader': {
-      fontSize: 12,
-    },
-  },
-  popup: {
-    '&.rc-cascader-dropdown': {
-      minHeight: '100px',
-    },
-    '&.rc-cascader-dropdown-hidden': {
-      display: 'none',
-    },
-    '& .rc-cascader-menus': {
-      zIndex: 1000,
-      fontSize: 12,
-      overflow: 'hidden',
-      background: '#fff',
-      position: 'absolute',
-      border: '1px solid #d9d9d9',
-      borderRadius: 6,
-      whiteSpace: 'nowrap',
-    },
-    '& .rc-cascader-menu': {
-      display: 'inline-block',
-      width: 'auto',
-      listStyle: 'none',
-      margin: 0,
-      padding: 0,
-      borderRight: '1px solid #e9e9e9',
-      overflow: 'auto',
-      '&:last-child': {
-        borderRight: 0,
-      },
-    },
-    '& .rc-cascader-menu-item': {
-      display: 'flex',
-      width: 'auto',
-      overflow: 'hidden',
-      fontSize: '1rem',
-      boxSizing: 'border-box',
-      lineHeight: 1.5,
-      paddingTop: '6px',
-      whiteSpace: 'nowrap',
-      paddingBottom: '6px',
-      paddingLeft: '16px',
-      paddingRight: '20px',
-      '&:hover': {
-        background: 'rgba(0, 0, 0, 0.04)',
-      },
-      '&.rc-cascader-menu-item-active': {
-        background: 'rgba(0, 0, 0, 0.08)',
-        '&:hover': {
-          background: 'rgba(0, 0, 0, 0.08)',
-        },
-      },
-      '&.rc-cascader-menu-item-expand': {
-        position: 'relative',
-      },
-    },
-    '& .rc-cascader-menu-item-expand-icon': {
-      position: 'absolute',
-      right: '4px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-    },
   },
 });
 
@@ -132,7 +68,6 @@ function CategoryPicker(props) {
   return (
     <div className={classes.root}>
       <Cascader
-        dropdownClassName={classes.popup}
         defaultValue={defaultValue()}
         multiple={multiple}
         options={options}
