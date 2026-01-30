@@ -45,8 +45,8 @@ function IndividualSummary(props) {
               </Typography>
             )}
           />
-          <Grid item container xs={12} spacing={5}>
-            <Grid item>
+          <Grid container size={12} spacing={5}>
+            <Grid>
               <div>
                 <Box>
                   <Typography className="rawValue" variant="h6">
@@ -83,7 +83,7 @@ function IndividualSummary(props) {
                     module="insuree"
                     id="InsureeSummary.gender"
                     field={(
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <Typography className="rawValue">{insuree.gender?.gender}</Typography>
                       </Grid>
                     )}
@@ -94,13 +94,13 @@ function IndividualSummary(props) {
               </div>
             </Grid>
             {hasExtContributions && (
-              <Grid item>
+              <Grid>
                 <Contributions contributionKey={INSUREE_SUMMARY_EXT_CONTRIBUTION_KEY} insuree={insuree} />
               </Grid>
             )}
           </Grid>
         </Box>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Contributions contributionKey={INSUREE_SUMMARY_CONTRIBUTION_KEY} insuree={insuree} />
         </Grid>
       </Grid>
@@ -108,4 +108,5 @@ function IndividualSummary(props) {
   );
 }
 
+export { INSUREE_SUMMARY_AVATAR_CONTRIBUTION_KEY };
 export default withModulesManager(injectIntl(IndividualSummary));

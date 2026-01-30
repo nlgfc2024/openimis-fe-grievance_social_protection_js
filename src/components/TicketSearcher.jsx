@@ -307,6 +307,7 @@ const mapDispatchToProps = (dispatch) => bindActionCreators(
   dispatch,
 );
 
+export { StyledTicketSearcher };
 export default withModulesManager(
   withHistory(
     connect(mapStateToProps, mapDispatchToProps)(injectIntl(TicketSearcher)),

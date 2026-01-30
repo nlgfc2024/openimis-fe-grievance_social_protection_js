@@ -73,7 +73,7 @@ function GrievanceCommentDialog({
             <div
               style={{ backgroundColor: '#DFEDEF', paddingLeft: '10px', paddingBottom: '10px' }}
             >
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <GrievantTypePicker
                   module={MODULE_NAME}
                   label="type"
@@ -85,7 +85,7 @@ function GrievanceCommentDialog({
                 />
               </Grid>
               {commenterType === 'user' && (
-                <Grid item xs={6} className="item">
+                <Grid size={6} className="item">
                   <PublishedComponent
                     pubRef="admin.UserPicker"
                     value={comment.commenter}
@@ -96,7 +96,7 @@ function GrievanceCommentDialog({
                 </Grid>
               )}
               {commenterType === 'individual' && (
-                <Grid item xs={3} className="item">
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="individual.IndividualPicker"
                     value={comment.reporter}
@@ -109,7 +109,7 @@ function GrievanceCommentDialog({
               )}
               {commenterType === 'beneficiary' && (
               <>
-                <Grid item xs={3} className="item">
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="socialProtection.BenefitPlanPicker"
                     withNull
@@ -119,7 +119,7 @@ function GrievanceCommentDialog({
                   />
                 </Grid>
                 {benefitPlan && (
-                <Grid item xs={3} className="item">
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="socialProtection.BeneficiaryPicker"
                     value={comment.reporter}
@@ -131,7 +131,7 @@ function GrievanceCommentDialog({
                 )}
               </>
               )}
-              <Grid item xs={12} className="item">
+              <Grid size={12} className="item">
                 <TextInput
                   label="ticket.comment"
                   value={comment.comment}
@@ -192,6 +192,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => bindActionCreators({
 }, dispatch);
 
+export { StyledGrievanceCommentDialog };
 export default injectIntl(
   connect(mapStateToProps, mapDispatchToProps)(GrievanceCommentDialog),
 );

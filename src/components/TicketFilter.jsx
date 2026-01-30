@@ -74,7 +74,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticketFilter.ticketCode"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <TextInput
                   module={MODULE_NAME}
                   label="ticket.ticketCode"
@@ -95,7 +95,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticketFilter.ticketTitle"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <TextInput
                   module={MODULE_NAME}
                   label="ticket.ticketTitle"
@@ -116,7 +116,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticket.reporter"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <PublishedComponent
                   pubRef="individual.IndividualPicker"
                   withNull
@@ -134,7 +134,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticketFilter.priority"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.TicketPriorityPicker"
                   withNull
@@ -155,7 +155,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticket.status"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.TicketStatusPicker"
                   label="ticket.ticketStatus"
@@ -176,7 +176,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticket.category"
             field={(
-              <Grid item xs={3} className="item">
+              <Grid size={3} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                   withNull
@@ -197,7 +197,7 @@ class TicketFilter extends Component {
               module={MODULE_NAME}
               id="TicketFilter.showHistory"
               field={(
-                <Grid item xs={2} className="item">
+                <Grid size={2} className="item">
                   <FormControlLabel
                     control={(
                       <Checkbox
@@ -223,4 +223,5 @@ class TicketFilter extends Component {
   }
 }
 
+export { StyledTicketFilter };
 export default withModulesManager(injectIntl(TicketFilter));

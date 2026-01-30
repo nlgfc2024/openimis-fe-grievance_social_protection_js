@@ -114,11 +114,11 @@ class EditTicketPage extends Component {
       <StyledEditTicketPage>
         <div className="page">
           <Grid container>
-            <Grid item xs={12}>
+            <Grid size={12}>
               {stateEdited.reporter && (
               <Paper className="paper">
                 <Grid container className="tableTitle">
-                  <Grid item xs={8} className="tableTitle">
+                  <Grid size={8} className="tableTitle">
                     <Typography>
                       <FormattedMessage module={MODULE_NAME} id={titleone} values={titleParams} />
                     </Typography>
@@ -126,7 +126,7 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Grid container className="item">
                   {stateEdited.reporterTypeName === 'individual' && (
-                  <Grid item xs={3} className="item">
+                  <Grid size={3} className="item">
                     <PublishedComponent
                       pubRef="individual.IndividualPicker"
                       value={reporter}
@@ -141,7 +141,7 @@ class EditTicketPage extends Component {
                 <Grid container className="item">
                   {stateEdited.reporterTypeName === 'individual' && (
                   <>
-                    <Grid item xs={4} className="item">
+                    <Grid size={4} className="item">
                       <TextInput
                         module={MODULE_NAME}
                         label="ticket.name"
@@ -155,7 +155,7 @@ class EditTicketPage extends Component {
                         readOnly
                       />
                     </Grid>
-                    <Grid item xs={4} className="item">
+                    <Grid size={4} className="item">
                       <TextInput
                         module={MODULE_NAME}
                         label="ticket.phone"
@@ -167,7 +167,7 @@ class EditTicketPage extends Component {
                         readOnly
                       />
                     </Grid>
-                    <Grid item xs={4} className="item">
+                    <Grid size={4} className="item">
                       <TextInput
                         module={MODULE_NAME}
                         label="ticket.email"
@@ -199,7 +199,7 @@ class EditTicketPage extends Component {
                   />
                   )}
                   {stateEdited.reporterTypeName === 'user' && (
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="admin.UserPicker"
                       value={reporter}
@@ -216,10 +216,10 @@ class EditTicketPage extends Component {
           </Grid>
 
           <Grid container>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper className="paper">
                 <Grid container className="tableTitle" alignItems="center">
-                  <Grid item xs={8} className="tableTitle">
+                  <Grid size={8} className="tableTitle">
                     <Typography>
                       <FormattedMessage
                         module={MODULE_NAME}
@@ -228,7 +228,7 @@ class EditTicketPage extends Component {
                       />
                     </Typography>
                   </Grid>
-                  <Grid item xs={4} style={{ textAlign: 'right' }}>
+                  <Grid size={4} style={{ textAlign: 'right' }}>
                     <ReactToPrint content={() => this.componentRef}>
                       <PrintContextConsumer>
                         {({ handlePrint }) => (
@@ -246,7 +246,7 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Divider />
                 <Grid container className="item">
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <TextInput
                       label="ticket.title"
                       value={stateEdited.title}
@@ -255,7 +255,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="core.DatePicker"
                       label="ticket.dateOfIncident"
@@ -265,7 +265,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                       value={stateEdited.category}
@@ -274,7 +274,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="grievanceSocialProtection.FlagPicker"
                       value={stateEdited.flags}
@@ -283,7 +283,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="grievanceSocialProtection.ChannelPicker"
                       value={stateEdited.channel}
@@ -292,7 +292,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="grievanceSocialProtection.TicketPriorityPicker"
                       value={stateEdited.priority}
@@ -301,7 +301,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="admin.UserPicker"
                       value={stateEdited.attendingStaff}
@@ -310,7 +310,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={6} className="item">
+                  <Grid size={6} className="item">
                     <PublishedComponent
                       pubRef="grievanceSocialProtection.TicketStatusPicker"
                       value={stateEdited.status}
@@ -319,7 +319,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={12} className="item">
+                  <Grid size={12} className="item">
                     <TextInput
                       label="ticket.description"
                       value={stateEdited.description}
@@ -334,10 +334,10 @@ class EditTicketPage extends Component {
           </Grid>
 
           <Grid container>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper className="paper">
                 <Grid container className="tableTitle">
-                  <Grid item xs={12} className="tableTitle">
+                  <Grid size={12} className="tableTitle">
                     <Typography>
                       <FormattedMessage
                         module={MODULE_NAME}
@@ -349,7 +349,7 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Divider />
                 <Grid container className="item">
-                  <Grid item xs={4} className="item">
+                  <Grid size={4} className="item">
                     <TextInput
                       label="ticket.resolution"
                       value={stateEdited.resolution}
@@ -358,8 +358,8 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid item xs={11} className="item" />
-                  <Grid item xs={1} className="item">
+                  <Grid size={11} className="item" />
+                  <Grid size={1} className="item">
                     <IconButton
                       variant="contained"
                       component="label"
@@ -407,4 +407,5 @@ const mapDispatchToProps = (dispatch) => bindActionCreators(
   dispatch,
 );
 
+export { StyledEditTicketPage };
 export default connect(mapStateToProps, mapDispatchToProps)(EditTicketPage);

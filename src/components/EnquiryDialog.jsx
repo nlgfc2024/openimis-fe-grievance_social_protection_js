@@ -73,4 +73,5 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIndividual }, dispatch);
+export { StyledEnquiryDialog };
 export default withModulesManager(withHistory(connect(mapStateToProps, mapDispatchToProps)(injectIntl(EnquiryDialog))));

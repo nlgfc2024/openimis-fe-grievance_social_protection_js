@@ -350,6 +350,7 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
   fetchComments, createTicketComment, resolveGrievanceByComment,
 }, dispatch);
 
+export { StyledTicketCommentPanel };
 export default withHistory(withModulesManager(connect(mapStateToProps, mapDispatchToProps)(
   injectIntl(TicketCommentPanel),
 )));

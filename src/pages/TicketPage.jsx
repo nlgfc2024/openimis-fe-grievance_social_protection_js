@@ -80,6 +80,7 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, updateTicket }, dispatch);
 
+export { StyledTicketPage };
 export default withHistory(withModulesManager(connect(mapStateToProps, mapDispatchToProps)(
   injectIntl(TicketPage),
 )));

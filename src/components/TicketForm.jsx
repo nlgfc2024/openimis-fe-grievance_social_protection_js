@@ -194,6 +194,7 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
   journalize,
 }, dispatch);
 
+export { TicketForm };
 export default withModulesManager(connect(mapStateToProps, mapDispatchToProps)(
   injectIntl(TicketForm),
 
