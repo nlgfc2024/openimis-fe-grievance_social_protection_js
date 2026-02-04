@@ -19,7 +19,7 @@ import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import { MODULE_NAME } from '../constants';
 
 const StyledGrievanceCommentDialog = styled('div')(({ theme }) => ({
-  '& .item': theme.paper.item,
+  '& .item': theme.paper?.item ?? {},
 }));
 
 function GrievanceCommentDialog({

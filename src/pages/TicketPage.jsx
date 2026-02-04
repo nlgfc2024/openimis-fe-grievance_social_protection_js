@@ -12,8 +12,8 @@ import { updateTicket, createTicket } from '../actions';
 import { RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT, TICKET_STATUSES } from '../constants';
 
 const StyledTicketPage = styled('div')(({ theme }) => ({
-  '& .page': theme.page,
-  '& .lockedPage': theme.page.locked,
+  '& .page': theme.page ?? {},
+  '& .lockedPage': theme.page?.locked ?? {},
 }));
 
 class TicketPage extends Component {

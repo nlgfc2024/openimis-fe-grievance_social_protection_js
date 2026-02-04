@@ -17,15 +17,15 @@ import {
 import { MODULE_NAME } from '../constants';
 
 const StyledTicketFilter = styled('div')(({ theme }) => ({
-  '& .dialogTitle': theme.dialog.title,
-  '& .dialogContent': theme.dialog.content,
+  '& .dialogTitle': theme.dialog?.title ?? {},
+  '& .dialogContent': theme.dialog?.content ?? {},
   '& .form': {
     padding: 0,
   },
   '& .item': {
     padding: theme.spacing(1),
   },
-  '& .paperDivider': theme.paper.divider,
+  '& .paperDivider': theme.paper?.divider ?? {},
 }));
 
 const TICKET_FILTER_CONTRIBUTION_KEY = 'ticket.Filter';

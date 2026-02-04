@@ -31,9 +31,9 @@ import { MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintCommentTemplate from './TicketPrintCommentTemplate';
 
 const StyledTicketCommentPanel = styled('div')(({ theme }) => ({
-  '& .paper': theme.paper.paper,
-  '& .tableTitle': theme.table.title,
-  '& .item': theme.table.item,
+  '& .paper': theme.paper?.paper ?? {},
+  '& .tableTitle': theme.table?.title ?? {},
+  '& .item': theme.table?.item ?? {},
   '& .fullHeight': {
     height: '100%',
   },

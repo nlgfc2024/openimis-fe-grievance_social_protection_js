@@ -18,9 +18,9 @@ import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 
 const StyledAddTicketPage = styled('div')(({ theme }) => ({
-  '& .paper': theme.paper.paper,
-  '& .tableTitle': theme.table.title,
-  '& .item': theme.paper.item,
+  '& .paper': theme.paper?.paper ?? {},
+  '& .tableTitle': theme.table?.title ?? {},
+  '& .item': theme.paper?.item ?? {},
   '& .fullHeight': {
     height: '100%',
   },

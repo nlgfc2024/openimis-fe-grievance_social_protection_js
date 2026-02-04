@@ -31,9 +31,9 @@ import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
 
 const StyledEditTicketPage = styled('div')(({ theme }) => ({
-  '& .paper': theme.paper.paper,
-  '& .tableTitle': theme.table.title,
-  '& .item': theme.paper.item,
+  '& .paper': theme.paper?.paper ?? {},
+  '& .tableTitle': theme.table?.title ?? {},
+  '& .item': theme.paper?.item ?? {},
   '& .fullHeight': {
     height: '100%',
   },

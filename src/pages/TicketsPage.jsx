@@ -13,8 +13,8 @@ import TicketSearcher from '../components/TicketSearcher';
 import { MODULE_NAME, RIGHT_TICKET_ADD } from '../constants';
 
 const StyledTicketsPage = styled('div')(({ theme }) => ({
-  '& .page': theme.page,
-  '& .fab': theme.fab,
+  '& .page': theme.page ?? {},
+  '& .fab': theme.fab ?? {},
 }));
 
 class TicketsPage extends Component {
