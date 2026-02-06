@@ -22,6 +22,10 @@ export default defineConfig({
   
         /^@openimis.*/,
         /^@emotion\/.*/,
+        '@mui/material',
+        '@mui/icons-material',
+        '@mui/x-date-pickers',
+        '@mui/styled-engine',
         'classnames',
         'clsx',
         'history',
