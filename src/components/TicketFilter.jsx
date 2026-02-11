@@ -13,6 +13,8 @@ import {
   PublishedComponent,
   decodeId,
   formatMessage,
+  GRID_RESPONSIVE_STANDARD,
+  GRID_RESPONSIVE_SMALL,
 } from '@openimis/fe-core';
 import { MODULE_NAME } from '../constants';
 
@@ -74,7 +76,7 @@ class TicketFilter extends Component {
             module={MODULE_NAME}
             id="ticketFilter.ticketCode"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <TextInput
                   module={MODULE_NAME}
                   label="ticket.ticketCode"
@@ -89,13 +91,13 @@ class TicketFilter extends Component {
                   ])}
                 />
               </Grid>
-                        )}
+            )}
           />
           <ControlledField
             module={MODULE_NAME}
             id="ticketFilter.ticketTitle"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <TextInput
                   module={MODULE_NAME}
                   label="ticket.ticketTitle"
@@ -110,13 +112,13 @@ class TicketFilter extends Component {
                   ])}
                 />
               </Grid>
-                        )}
+            )}
           />
           <ControlledField
             module={MODULE_NAME}
             id="ticket.reporter"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <PublishedComponent
                   pubRef="individual.IndividualPicker"
                   withNull
@@ -128,13 +130,13 @@ class TicketFilter extends Component {
                   )}
                 />
               </Grid>
-                        )}
+            )}
           />
           <ControlledField
             module={MODULE_NAME}
             id="ticketFilter.priority"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.TicketPriorityPicker"
                   withNull
@@ -149,13 +151,13 @@ class TicketFilter extends Component {
                   ])}
                 />
               </Grid>
-                        )}
+            )}
           />
           <ControlledField
             module={MODULE_NAME}
             id="ticket.status"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.TicketStatusPicker"
                   label="ticket.ticketStatus"
@@ -170,13 +172,13 @@ class TicketFilter extends Component {
                   ])}
                 />
               </Grid>
-                        )}
+            )}
           />
           <ControlledField
             module={MODULE_NAME}
             id="ticket.category"
             field={(
-              <Grid size={3} className="item">
+              <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <PublishedComponent
                   pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                   withNull
@@ -190,28 +192,26 @@ class TicketFilter extends Component {
                   ])}
                 />
               </Grid>
-                        )}
+            )}
           />
-          <Grid>
-            <ControlledField
-              module={MODULE_NAME}
-              id="TicketFilter.showHistory"
-              field={(
-                <Grid size={2} className="item">
-                  <FormControlLabel
-                    control={(
-                      <Checkbox
-                        color="primary"
-                        checked={!!this._filterValue('showHistory')}
-                        onChange={(event) => this._onChangeCheckbox('showHistory', event.target.checked)}
-                      />
-                                  )}
-                    label={formatMessage(this.props.intl, MODULE_NAME, 'showHistory')}
-                  />
-                </Grid>
-                      )}
-            />
-          </Grid>
+          <ControlledField
+            module={MODULE_NAME}
+            id="TicketFilter.showHistory"
+            field={(
+              <Grid size={GRID_RESPONSIVE_SMALL} className="item">
+                <FormControlLabel
+                  control={(
+                    <Checkbox
+                      color="primary"
+                      checked={!!this._filterValue('showHistory')}
+                      onChange={(event) => this._onChangeCheckbox('showHistory', event.target.checked)}
+                    />
+                  )}
+                  label={formatMessage(this.props.intl, MODULE_NAME, 'showHistory')}
+                />
+              </Grid>
+            )}
+          />
           <Contributions
             filters={filters}
             onChangeFilters={onChangeFilters}
