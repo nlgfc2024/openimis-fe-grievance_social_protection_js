@@ -16,9 +16,6 @@
     "format": "prettier src -w",
     "prepare": "npm run build"
   },
-  "peerDependencies": {
-    "react-intl": "^7.1.11"
-  },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
     "vite": "^7.1.2",
@@ -36,6 +33,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^7.2.0",
     "@mui/icons-material": "^7.2.0",
-    "react-to-print": "^3.1.1"
+    "react-to-print": "^3.1.1",
+    "react-intl": "^7.1.11"
   }
 }
