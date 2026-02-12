@@ -19,11 +19,10 @@ export default defineConfig({
       external: [
         /^@babel.*/,
         /^@date-io\/.*/,
-  
         /^@openimis.*/,
         /^@emotion\/.*/,
-        '@mui/material',
-        '@mui/icons-material',
+        /^@mui\/material/,
+        /^@mui\/icons-material/,
         '@mui/x-date-pickers',
         '@mui/styled-engine',
         'classnames',
