@@ -33,6 +33,7 @@ export default defineConfig({
         'prop-types',
         /^react.*/,
         /^redux.*/,
+        'react-to-print',
       ],
       output: {
         globals: {
