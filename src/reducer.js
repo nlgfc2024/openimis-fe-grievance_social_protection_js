@@ -259,6 +259,12 @@ function reducer(
       return dispatchMutationErr(state, action);
     case 'TICKET_CREATE_TICKET_ATTACHMENT_RESP':
       return dispatchMutationResp(state, 'createTicketAttachment', action);
+    case 'TICKET_COMMENT_MUTATION_REQ':
+      return dispatchMutationReq(state, action);
+    case 'TICKET_COMMENT_MUTATION_ERR':
+      return dispatchMutationErr(state, action);
+    case 'TICKET_CREATE_COMMENT_RESP':
+      return dispatchMutationResp(state, 'createComment', action);
     default:
       return state;
   }
