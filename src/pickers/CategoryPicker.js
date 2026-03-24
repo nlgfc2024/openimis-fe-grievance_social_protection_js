@@ -11,6 +11,13 @@ const styles = () => ({
   root: {
     width: '100%',
   },
+  '@keyframes spin': {
+    from: { transform: 'rotate(0deg)' },
+    to: { transform: 'rotate(360deg)' },
+  },
+  spin: {
+    animation: '$spin 1s linear infinite',
+  },
 });
 
 function CategoryPicker(props) {
@@ -22,7 +29,6 @@ function CategoryPicker(props) {
     label,
     placeholder,
     classes,
-    multiple,
   } = props;
   const { formatMessage } = useTranslations('ticket');
   const [inputValue, setInputValue] = useState(value ?? '');
@@ -31,7 +37,7 @@ function CategoryPicker(props) {
     setInputValue(value ?? '');
   }, [value]);
 
-  const { data, error } = useGraphqlQuery(
+  const { isLoading, data, error } = useGraphqlQuery(
     `query CategoryPicker {
         grievanceConfig{
           grievanceCategoriesHierarchical{
@@ -59,7 +65,7 @@ function CategoryPicker(props) {
     const selected = selectedOptions && selectedOptions[selectedOptions.length - 1];
     const stringValue = selected?.value ?? null;
     setInputValue(stringValue || '');
-    onChange?.(selected, stringValue);
+    onChange?.(stringValue, selected);
   };
 
   const defaultValue = () => {
@@ -75,14 +81,13 @@ function CategoryPicker(props) {
     <div className={classes.root}>
       <Cascader
         value={defaultValue()}
-        multiple={multiple}
         options={options}
         onChange={handleCascaderChange}
         changeOnSelect
         getPopupContainer={(trigger) => trigger.parentElement}
         disabled={readOnly}
         expandIcon={<KeyboardArrowRightIcon fontSize="small" />}
-        loadingIcon={<AutorenewIcon fontSize="small" className="spin" />}
+        loadingIcon={<AutorenewIcon fontSize="small" className={classes.spin} />}
       >
         <TextField
           label={label || formatMessage('CategoryPicker.label')}
@@ -90,7 +95,7 @@ function CategoryPicker(props) {
           required={required}
           value={inputValue}
           fullWidth
-          disabled={readOnly}
+          disabled={readOnly || isLoading}
           error={!!error}
           InputProps={{
             readOnly: true,
