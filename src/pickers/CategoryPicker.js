@@ -52,14 +52,14 @@ function CategoryPicker(props) {
     { skip: true },
   );
 
-  const options = data?.grievanceConfig?.grievanceCategoriesHierarchical.map((type) => ({
+  const options = (data?.grievanceConfig?.grievanceCategoriesHierarchical ?? []).map((type) => ({
     label: type.name,
     value: type.fullName,
     children: (type.children ?? []).map((child) => ({
       label: child.name,
       value: child.fullName,
     })),
-  })) ?? [];
+  }));
 
   const handleCascaderChange = (values, selectedOptions) => {
     const selected = selectedOptions && selectedOptions[selectedOptions.length - 1];
