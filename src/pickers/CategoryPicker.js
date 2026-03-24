@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import Cascader from 'rc-cascader';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ClearIcon from '@material-ui/icons/Clear';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import { withTheme, withStyles } from '@material-ui/core/styles';
-import { TextField } from '@material-ui/core';
+import { TextField, IconButton, InputAdornment } from '@material-ui/core';
 import { useTranslations, useGraphqlQuery } from '@openimis/fe-core';
 
 const styles = () => ({
@@ -61,6 +62,12 @@ function CategoryPicker(props) {
     })),
   }));
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    setInputValue('');
+    onChange?.(null, null);
+  };
+
   const handleCascaderChange = (values, selectedOptions) => {
     const selected = selectedOptions && selectedOptions[selectedOptions.length - 1];
     const stringValue = selected?.value ?? null;
@@ -99,9 +106,16 @@ function CategoryPicker(props) {
           error={!!error}
           InputProps={{
             readOnly: true,
-            endAdornment: (<ArrowDropDownIcon
-              style={{ color: 'rgba(0, 0, 0, 0.54)' }}
-            />),
+            endAdornment: (
+              <InputAdornment position="end">
+                {inputValue && !readOnly && (
+                  <IconButton size="small" onClick={handleClear}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                )}
+                <ArrowDropDownIcon style={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+              </InputAdornment>
+            ),
           }}
         />
       </Cascader>
