@@ -45,6 +45,12 @@ function CategoryPicker(props) {
             name fullName
             children {
               name fullName
+              children {
+                name fullName
+                children {
+                  name fullName
+                }
+              }
             }
           }
         }
@@ -53,14 +59,13 @@ function CategoryPicker(props) {
     { skip: true },
   );
 
-  const options = (data?.grievanceConfig?.grievanceCategoriesHierarchical ?? []).map((type) => ({
-    label: type.name,
-    value: type.fullName,
-    children: (type.children ?? []).map((child) => ({
-      label: child.name,
-      value: child.fullName,
-    })),
+  const buildOptions = (categories) => (categories ?? []).map((cat) => ({
+    label: cat.name,
+    value: cat.fullName,
+    children: buildOptions(cat.children),
   }));
+
+  const options = buildOptions(data?.grievanceConfig?.grievanceCategoriesHierarchical);
 
   const handleClear = (e) => {
     e.stopPropagation();
