@@ -4,7 +4,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ClearIcon from '@material-ui/icons/Clear';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { TextField, IconButton, InputAdornment } from '@material-ui/core';
 import { useTranslations, useGraphqlQuery } from '@openimis/fe-core';
 
@@ -116,4 +116,4 @@ function CategoryPicker(props) {
   );
 }
 
-export default withTheme(withStyles(styles)(CategoryPicker));
+export default withStyles(styles)(CategoryPicker);
