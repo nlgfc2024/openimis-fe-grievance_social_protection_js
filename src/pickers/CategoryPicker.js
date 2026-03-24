@@ -68,8 +68,8 @@ function CategoryPicker(props) {
     onChange?.(null, null);
   };
 
-  const handleCascaderChange = (values, selectedOptions) => {
-    const selected = selectedOptions && selectedOptions[selectedOptions.length - 1];
+  const handleCascaderChange = (values, selectedOptions = []) => {
+    const selected = selectedOptions.length ? selectedOptions[selectedOptions.length - 1] : null;
     const stringValue = selected?.value ?? null;
     setInputValue(stringValue || '');
     onChange?.(stringValue, selected);
@@ -79,9 +79,8 @@ function CategoryPicker(props) {
     if (!value) {
       return [];
     }
-    return value.split('|')
-      .map((v, index, arr) => arr.slice(0, index + 1)
-        .join('|'));
+    const parts = value.split(' > ');
+    return parts.map((_, index) => parts.slice(0, index + 1).join(' > '));
   };
 
   return (
@@ -92,7 +91,7 @@ function CategoryPicker(props) {
         onChange={handleCascaderChange}
         changeOnSelect
         getPopupContainer={(trigger) => trigger.parentElement}
-        disabled={readOnly}
+        disabled={readOnly || isLoading}
         expandIcon={<KeyboardArrowRightIcon fontSize="small" />}
         loadingIcon={<AutorenewIcon fontSize="small" className={classes.spin} />}
       >
