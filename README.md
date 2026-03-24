@@ -12,8 +12,5 @@ In development mode, you can use `yarn link` and `yarn start` to continuously sc
 
 ## Limitations
 
-### Category Hierarchy Depth
-The `CategoryPicker` component (`src/pickers/CategoryPicker.js`) uses a GraphQL query that fetches up to **4 levels** of category hierarchy. The backend supports arbitrary depth, but GraphQL does not support recursive queries. To support deeper hierarchies, add additional `children { name fullName }` nesting levels to the query.
-
 ### Category Separator
 Category full names use ` > ` as the hierarchy separator (e.g. `Enrollment > Missing Documents`). This is consistent with the backend `CATEGORY_SEPARATOR` constant. Category names must not contain ` > `.

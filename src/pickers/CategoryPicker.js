@@ -41,18 +41,7 @@ function CategoryPicker(props) {
   const { isLoading, data, error } = useGraphqlQuery(
     `query CategoryPicker {
         grievanceConfig{
-          grievanceCategoriesHierarchical{
-            name fullName
-            children {
-              name fullName
-              children {
-                name fullName
-                children {
-                  name fullName
-                }
-              }
-            }
-          }
+          grievanceCategoriesJson
         }
     }`,
     {},
@@ -61,11 +50,11 @@ function CategoryPicker(props) {
 
   const buildOptions = (categories) => (categories ?? []).map((cat) => ({
     label: cat.name,
-    value: cat.fullName,
+    value: cat.full_name,
     children: buildOptions(cat.children),
   }));
 
-  const options = buildOptions(data?.grievanceConfig?.grievanceCategoriesHierarchical);
+  const options = buildOptions(data?.grievanceConfig?.grievanceCategoriesJson);
 
   const handleClear = (e) => {
     e.stopPropagation();
