@@ -6,6 +6,7 @@ import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import ListAlt from '@mui/icons-material/ListAlt';
 import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'
 import { formatMessage, MainMenuContribution, withModulesManager } from '@openimis/fe-core';
 import {
   GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY,
@@ -15,36 +16,13 @@ import {
 } from '../constants';
 
 function GrievanceMainMenu(props) {
-  const ROUTE_TICKET_TICKETS = 'ticket/tickets';
-  const ROUTE_TICKET_NEW_TICKET = 'ticket/newTicket';
-  const entries = [
-    {
-      text: formatMessage(props.intl, MODULE_NAME, 'menu.grievance.grievances'),
-      icon: <ListAlt />,
-      route: `/${ROUTE_TICKET_TICKETS}`,
-      filter: (rights) => rights.includes(RIGHT_TICKET_SEARCH),
-      id: 'grievance.grievances',
-    },
-    {
-      text: formatMessage(props.intl, MODULE_NAME, 'menu.grievance.add'),
-      icon: <AddCircleOutline />,
-      route: `/${ROUTE_TICKET_NEW_TICKET}`,
-      filter: (rights) => rights.includes(RIGHT_TICKET_ADD),
-      id: 'grievance.add',
-    },
-  ];
-  entries.push(
-    ...props.modulesManager
-      .getContribs(GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY)
-      .filter((c) => !c.filter || c.filter(props.rights)),
-  );
-
   return (
     <MainMenuContribution
       {...props}
+      icon={<AccessAlarmIcon />}
       header={formatMessage(props.intl, MODULE_NAME, 'mainMenuGrievance')}
-      entries={entries}
       menuId="GrievanceMainMenu"
+      contributionKey={GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY}
     />
   );
 }
