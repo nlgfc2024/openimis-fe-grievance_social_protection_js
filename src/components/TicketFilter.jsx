@@ -67,7 +67,7 @@ class TicketFilter extends Component {
 
   render() {
     const {
-      filters, onChangeFilters,
+      filters, onChangeFilters, intl
     } = this.props;
     return (
       <StyledTicketFilter>
@@ -120,9 +120,12 @@ class TicketFilter extends Component {
             field={(
               <Grid size={GRID_RESPONSIVE_STANDARD} className="item">
                 <PublishedComponent
+                  withLabel
+                  withPlaceholder
                   pubRef="individual.IndividualPicker"
+                  label={formatMessage(intl, MODULE_NAME, "ticket.searchPerson.label")}
+                  placeholder={formatMessage(intl, MODULE_NAME, "ticket.searchPerson.placeholder")}
                   withNull
-                  label="Individual"
                   value={this._filterValue('reporterId')}
                   onChange={(v) => this._onChangeReporter(
                     'reporterId',

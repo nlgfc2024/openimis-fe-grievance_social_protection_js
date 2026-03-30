@@ -191,6 +191,7 @@ class TicketCommentPanel extends Component {
       'ticket.dateCreated',
       'ticket.markAsResolved',
     ];
+    const canUseReactToPrint = typeof ReactToPrint === 'function' && !!PrintContextConsumer;
 
     const shouldHighlight = (row) => row?.isResolution;
 
@@ -293,19 +294,21 @@ class TicketCommentPanel extends Component {
                 commenterType={commenterType}
                 disabled={this.isReadOnly()}
               />
-              <ReactToPrint content={() => this.componentRef}>
-                <PrintContextConsumer>
-                  {({ handlePrint }) => (
-                    <IconButton
-                      variant="contained"
-                      component="label"
-                      onClick={handlePrint}
-                    >
-                      <PrintIcon />
-                    </IconButton>
-                  )}
-                </PrintContextConsumer>
-              </ReactToPrint>
+              {canUseReactToPrint && (
+                <ReactToPrint content={() => this.componentRef}>
+                  <PrintContextConsumer>
+                    {({ handlePrint }) => (
+                      <IconButton
+                        variant="contained"
+                        component="label"
+                        onClick={handlePrint}
+                      >
+                        <PrintIcon />
+                      </IconButton>
+                    )}
+                  </PrintContextConsumer>
+                </ReactToPrint>
+              )}
             </div>
             <Table
               module={MODULE_NAME}

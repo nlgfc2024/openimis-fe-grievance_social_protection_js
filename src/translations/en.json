@@ -137,5 +137,11 @@
     "ticket.template.attendingStaff": "Attending Staff",
     "ticket.template.description": "Description",
     "ticket.template.comments": "Comments",
-    "ticket.template.noComments": "No Comments yet"
+    "ticket.template.noComments": "No Comments yet",
+    "ticket.searchPerson.label": "Find an Individual",
+    "ticket.searchPerson.placeholder": "Search and select...",
+    "ticket.searchPerson.tooltip": "Type and select an Individual",
+    "ticket.terminology.help": "Individual: Personn who submit grievance. Beneficiary: Personn covered by the Benefit Plan/Program",
+    "ticket.save.success.title": "Grievance saved",
+    "ticket.save.success.body": "The Grievance was saved successfuly"
 }
