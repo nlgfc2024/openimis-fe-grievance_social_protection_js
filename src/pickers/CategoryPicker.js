@@ -45,16 +45,24 @@ function CategoryPicker(props) {
         }
     }`,
     {},
-    { skip: true },
+    { skip: false },
   );
 
+  const translateName = (name) => {
+    const key = `CategoryPicker.category.${name}`;
+    const translated = formatMessage(key);
+    return translated !== key ? translated : name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
   const buildOptions = (categories) => (categories ?? []).map((cat) => ({
-    label: cat.name,
+    label: translateName(cat.name),
     value: cat.full_name,
-    children: buildOptions(cat.children),
+    children: cat.children?.length ? buildOptions(cat.children) : undefined,
   }));
 
-  const options = buildOptions(data?.grievanceConfig?.grievanceCategoriesJson);
+  const rawJson = data?.grievanceConfig?.grievanceCategoriesJson;
+  const parsed = typeof rawJson === 'string' ? JSON.parse(rawJson) : rawJson;
+  const options = buildOptions(parsed);
 
   const handleClear = (e) => {
     e.stopPropagation();
