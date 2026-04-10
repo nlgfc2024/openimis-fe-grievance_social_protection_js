@@ -4,16 +4,15 @@
 import React from 'react';
 import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
-import ListAlt from '@mui/icons-material/ListAlt';
-import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'
-import { formatMessage, MainMenuContribution, withModulesManager } from '@openimis/fe-core';
+import { formatMessage, MainMenuContribution, withModulesManager, GetIconComponent } from '@openimis/fe-core';
 import {
   GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY,
   MODULE_NAME,
   RIGHT_TICKET_ADD,
   RIGHT_TICKET_SEARCH,
 } from '../constants';
+
+const AccessAlarmIcon = GetIconComponent("AccessAlarm");
 
 function GrievanceMainMenu(props) {
   return (

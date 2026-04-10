@@ -9,14 +9,14 @@ import { bindActionCreators } from 'redux';
 import {
   Grid, Paper, Typography, Divider, IconButton,
 } from '@mui/material';
-import Save from '@mui/icons-material/Save';
+
 import {
-  TextInput, journalize, PublishedComponent, FormattedMessage,
+  TextInput, journalize, PublishedComponent, FormattedMessage, GetIconComponent,
 } from '@openimis/fe-core';
 import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
-
+const Save = GetIconComponent("Save");
 const StyledAddTicketPage = styled('div')(({ theme }) => ({
   '& .paper': theme.paper?.paper ?? {},
   '& .tableTitle': theme.table?.title ?? {},

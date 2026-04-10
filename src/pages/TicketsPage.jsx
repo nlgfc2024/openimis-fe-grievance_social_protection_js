@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { styled } from '@mui/material/styles';
 import { Fab } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import {
-  historyPush, withModulesManager, withHistory, withTooltip, formatMessage, decodeId,
+  GetIconComponent, historyPush, withModulesManager, withHistory, withTooltip, formatMessage, decodeId,
 } from '@openimis/fe-core';
 import TicketSearcher from '../components/TicketSearcher';
 
 import { MODULE_NAME, RIGHT_TICKET_ADD } from '../constants';
+const AddIcon = GetIconComponent("Add");
 
 const StyledTicketsPage = styled('div')(({ theme }) => ({
   '& .page': theme.page ?? {},

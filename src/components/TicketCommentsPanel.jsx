@@ -5,7 +5,6 @@
 /* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
 import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
-import PrintIcon from '@mui/icons-material/Print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -18,12 +17,15 @@ import {
   Table,
   withHistory,
   withModulesManager,
+  GetIconComponent,
 } from '@openimis/fe-core';
 import {
   IconButton, Paper, Tooltip,
 } from '@mui/material';
-import ReplayIcon from '@mui/icons-material/Replay';
-import DoneIcon from '@mui/icons-material/Done';
+const ReplayIcon = GetIconComponent("Replay");
+const DoneIcon = GetIconComponent("Done");
+const PrintIcon = GetIconComponent("Print");
+
 import { createTicketComment, fetchComments, resolveGrievanceByComment } from '../actions';
 import GrievanceCommentDialog from '../dialogs/GrievanceCommentDialog';
 import { isEmptyObject } from '../utils/utils';
