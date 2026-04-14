@@ -6,7 +6,6 @@
 /* eslint-disable react/destructuring-assignment */
 import React, { Component, useRef } from 'react';
 import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
-import PrintIcon from '@mui/icons-material/Print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -22,12 +21,14 @@ import {
   TextInput,
   PublishedComponent,
   FormattedMessage,
+  GetIconComponent,
 } from '@openimis/fe-core';
 import _ from 'lodash';
-import { fetchTicket, createTicketComment } from '../actions';
+import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
-
+const Save = GetIconComponent("Save");
+const PrintIcon = GetIconComponent("Print");
 const StyledEditTicketPage = styled('div')(({ theme }) => ({
   '& .paper': theme.paper?.paper ?? {},
   '& .tableTitle': theme.table?.title ?? {},

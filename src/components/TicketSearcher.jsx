@@ -19,9 +19,10 @@ import {
   formatMessage,
   historyPush,
   decodeId,
+  GetIconComponent,
 } from '@openimis/fe-core';
-import EditIcon from '@mui/icons-material/Edit';
-// import AddIcon from '@mui/icons-material/Add';
+const EditIcon = GetIconComponent("Edit");
+// const AddIcon = GetIconComponent("Add");
 import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
 import { fetchTicketSummaries, resolveTicket } from '../actions';
 import { isEmptyObject } from '../utils/utils';

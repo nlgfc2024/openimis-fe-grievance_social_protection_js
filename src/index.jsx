@@ -2,9 +2,9 @@
 /* eslint-disable camelcase */
 /* eslint-disable import/prefer-default-export */
 import React from 'react';
-import ListAlt from '@mui/icons-material/ListAlt';
-import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
-import { FormattedMessage } from '@openimis/fe-core';
+import { FormattedMessage, GetIconComponent } from '@openimis/fe-core';
+const ListAlt = GetIconComponent("ListAlt");
+const AddCircleOutline = GetIconComponent("AddCircleOutline");
 import messages_en from './translations/en.json';
 import reducer from './reducer';
 import GrievanceMainMenu from './menu/GrievanceMainMenu';

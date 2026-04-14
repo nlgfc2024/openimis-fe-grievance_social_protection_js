@@ -10,13 +10,13 @@ import { injectIntl } from 'react-intl'
 import {
   Grid, Paper, Typography, Divider, Tooltip,
 } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
 import {
-  TextInput, journalize, PublishedComponent, FormattedMessage, formatMessage,
+  TextInput, journalize, PublishedComponent, FormattedMessage, GetIconComponent, formatMessage,
 } from '@openimis/fe-core';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
-
+const Save = GetIconComponent("Save");
 const StyledAddTicketPage = styled('div')(({ theme }) => ({
   '& .paper': theme.paper?.paper ?? {},
   '& .tableTitle': theme.table?.title ?? {},

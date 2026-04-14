@@ -5,9 +5,9 @@
 import React, { Component, Fragment } from 'react';
 import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 import {
-  Form, formatMessageWithValues, journalize, ProgressOrError, withModulesManager, formatMessage, coreAlert,
+  Form, GetIconComponent, withModulesManager, formatMessage,
+  formatMessageWithValues, journalize, ProgressOrError, coreAlert,
 } from '@openimis/fe-core';
 import { bindActionCreators } from 'redux';
 import {
@@ -19,6 +19,7 @@ import EditTicketPage from '../pages/EditTicketPage';
 import AddTicketPage from '../pages/AddTicketPage';
 import TicketCommentPanel from './TicketCommentsPanel';
 import { MODULE_NAME, TICKET_STATUSES } from '../constants';
+const LockOpenIcon = GetIconComponent("LockOpen");
 
 class TicketForm extends Component {
   constructor(props) {
