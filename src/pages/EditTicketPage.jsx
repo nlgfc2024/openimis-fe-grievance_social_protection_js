@@ -15,7 +15,6 @@ import {
   Typography,
   Divider,
   IconButton,
-  Button,
 } from '@mui/material';
 import {
   journalize,
@@ -67,17 +66,16 @@ class EditTicketPage extends Component {
     }
   }
 
-  save = () => {
-    this.props.updateTicket(
-      this.state.stateEdited,
-      `updated ticket ${this.state.stateEdited.code}`,
-    );
+  syncEdited = (edited) => {
+    if (this.props.onEditedChanged) {
+      this.props.onEditedChanged(edited);
+    }
   };
 
   updateAttribute = (k, v) => {
     this.setState((state) => ({
       stateEdited: { ...state.stateEdited, [k]: v },
-    }));
+    }), () => this.syncEdited(this.state.stateEdited));
   };
 
   extractFieldFromJsonExt = (reporter, field) => {
@@ -106,6 +104,7 @@ class EditTicketPage extends Component {
     } = this.props;
 
     const propsReadOnly = this.props.readOnly;
+    const canUseReactToPrint = typeof ReactToPrint === 'function' && !!PrintContextConsumer;
 
     const {
       stateEdited, reporter, comments,
@@ -131,7 +130,8 @@ class EditTicketPage extends Component {
                       pubRef="individual.IndividualPicker"
                       value={reporter}
                       onChange={(v) => this.updateAttribute('reporter', v)}
-                      label="Complainant"
+                      label="ticket.searchPerson.label"
+                      placeholder="Commencez à saisir un nom..."
                       readOnly
                     />
                   </Grid>
@@ -186,6 +186,8 @@ class EditTicketPage extends Component {
                     pubRef="socialProtection.BeneficiaryPicker"
                     onChange={(v) => this.updateAttribute('reporter', v)}
                     readOnly
+                    label="ticket.searchPerson.label"
+                    placeholder="Commencez à saisir un nom..."
                     value={
                       {
                         individual: {
@@ -205,6 +207,8 @@ class EditTicketPage extends Component {
                       value={reporter}
                       module="core"
                       onChange={(v) => this.updateAttribute('reporter', v)}
+                      label="ticket.searchPerson.label"
+                      placeholder="Commencez à saisir un nom..."
                       readOnly
                     />
                   </Grid>
@@ -229,19 +233,21 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                   <Grid size={4} style={{ textAlign: 'right' }}>
-                    <ReactToPrint content={() => this.componentRef}>
-                      <PrintContextConsumer>
-                        {({ handlePrint }) => (
-                          <IconButton
-                            variant="contained"
-                            component="label"
-                            onClick={handlePrint}
-                          >
-                            <PrintIcon />
-                          </IconButton>
-                        )}
-                      </PrintContextConsumer>
-                    </ReactToPrint>
+                    {canUseReactToPrint && (
+                      <ReactToPrint content={() => this.componentRef}>
+                        <PrintContextConsumer>
+                          {({ handlePrint }) => (
+                            <IconButton
+                              variant="contained"
+                              component="label"
+                              onClick={handlePrint}
+                            >
+                              <PrintIcon />
+                            </IconButton>
+                          )}
+                        </PrintContextConsumer>
+                      </ReactToPrint>
+                    )}
                   </Grid>
                 </Grid>
                 <Divider />
@@ -358,18 +364,7 @@ class EditTicketPage extends Component {
                       readOnly={propsReadOnly}
                     />
                   </Grid>
-                  <Grid size={11} className="item" />
-                  <Grid size={1} className="item">
-                    <IconButton
-                      variant="contained"
-                      component="label"
-                      color="primary"
-                      onClick={this.save}
-                      disabled={propsReadOnly || !this.doesTicketChange()}
-                    >
-                      <Save />
-                    </IconButton>
-                  </Grid>
+                  <Grid size={12} className="item" />
                 </Grid>
               </Paper>
             </Grid>
@@ -402,7 +397,7 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
-    fetchTicket, updateTicket, createTicketComment, journalize,
+    fetchTicket, createTicketComment, journalize,
   },
   dispatch,
 );

@@ -7,7 +7,7 @@ import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import {
   Form, GetIconComponent, withModulesManager, formatMessage,
-  formatMessageWithValues, journalize, ProgressOrError, 
+  formatMessageWithValues, journalize, ProgressOrError, coreAlert,
 } from '@openimis/fe-core';
 import { bindActionCreators } from 'redux';
 import {
@@ -73,6 +73,12 @@ class TicketForm extends Component {
       this.setState({ ticket: this._newTicket(), lockNew: false, ticketUuid: null });
     } else if (prevProps.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
+      if (this.props.mutation && !this.props.mutation.error) {
+        this.props.coreAlert(
+          formatMessage(this.props.intl, MODULE_NAME, 'ticket.save.success.title'),
+          formatMessage(this.props.intl, MODULE_NAME, 'ticket.save.success.body'),
+        );
+      }
       this.setState((state) => ({ reset: state.reset + 1 }));
       if (this.props?.ticket?.id) {
         this.props.fetchTicket(
@@ -193,6 +199,7 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
   fetchGrievanceConfiguration,
   clearTicket,
   journalize,
+  coreAlert,
 }, dispatch);
 
 export { TicketForm };

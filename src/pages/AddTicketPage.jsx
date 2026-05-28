@@ -6,14 +6,14 @@ import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { injectIntl } from 'react-intl'
 import {
-  Grid, Paper, Typography, Divider, IconButton,
+  Grid, Paper, Typography, Divider, Tooltip,
 } from '@mui/material';
 
 import {
-  TextInput, journalize, PublishedComponent, FormattedMessage, GetIconComponent,
+  TextInput, journalize, PublishedComponent, FormattedMessage, GetIconComponent, formatMessage,
 } from '@openimis/fe-core';
-import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 const Save = GetIconComponent("Save");
@@ -44,20 +44,17 @@ class AddTicketPage extends Component {
     }
   }
 
-  save = () => {
-    this.props.createTicket(
-      this.state.stateEdited,
-      this.props.grievanceConfig,
-      `Created Ticket ${this.state.stateEdited.title}`,
-    );
-    this.setState({ isSaved: true });
+  syncEdited = (edited) => {
+    if (this.props.onEditedChanged) {
+      this.props.onEditedChanged(edited);
+    }
   };
 
   updateAttribute = (k, v) => {
     this.setState((state) => ({
       stateEdited: { ...state.stateEdited, [k]: v },
       isSaved: false, // Reset isSaved when form is modified
-    }));
+    }), () => this.syncEdited(this.state.stateEdited));
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -89,6 +86,7 @@ class AddTicketPage extends Component {
       titleone = ' Ticket.ComplainantInformation',
       titletwo = ' Ticket.DescriptionOfEvents',
       titleParams = { label: EMPTY_STRING },
+      intl
     } = this.props;
 
     const {
@@ -122,6 +120,9 @@ class AddTicketPage extends Component {
                       onChange={(v) => this.updateTypeOfGrievant('grievantType', v)}
                       withLabel
                     />
+                    <Typography variant="caption" color="text.secondary">
+                      <FormattedMessage module={MODULE_NAME} id="ticket.terminology.help" />
+                    </Typography>
                   </Grid>
                   {grievantType === 'individual' && (
                     <>
@@ -136,14 +137,21 @@ class AddTicketPage extends Component {
                         />
                       </Grid>
                       <Grid size={3} className="item">
-                        <PublishedComponent
-                          pubRef="individual.IndividualPicker"
-                          value={stateEdited.reporter}
-                          label="Complainant"
-                          onChange={(v) => this.updateAttribute('reporter', v)}
-                          benefitPlan={benefitPlan}
-                          readOnly={isSaved}
-                        />
+                        <Tooltip title={<FormattedMessage module={MODULE_NAME} id="ticket.searchPerson.tooltip" />}>
+                          <div>
+                            <PublishedComponent
+                              withLabel
+                              withPlaceholder
+                              pubRef="individual.IndividualPicker"
+                              value={stateEdited.reporter}
+                              label={formatMessage(intl, MODULE_NAME, "ticket.searchPerson.label")}
+                              placeholder={formatMessage(intl, MODULE_NAME, "ticket.searchPerson.placeholder")}
+                              onChange={(v) => this.updateAttribute('reporter', v)}
+                              benefitPlan={benefitPlan}
+                              readOnly={isSaved}
+                            />
+                          </div>
+                        </Tooltip>
                       </Grid>
                     </>
                   )}
@@ -362,26 +370,6 @@ class AddTicketPage extends Component {
                       readOnly={isSaved}
                     />
                   </Grid>
-                  <Grid size={11} className="item" />
-                  <Grid size={1} className="item">
-                    <IconButton
-                      variant="contained"
-                      component="label"
-                      color="primary"
-                      onClick={this.save}
-                      disabled={
-                        (!stateEdited.channel || !stateEdited.flags || !stateEdited.title || isSaved)
-                        || ((
-                          stateEdited.reporterType === 'individual'
-                          || stateEdited.reporterType === 'beneficiary'
-                          || stateEdited.reporterType === 'user')
-                          && stateEdited.reporter === null
-                        )
-                      }
-                    >
-                      <Save />
-                    </IconButton>
-                  </Grid>
                 </Grid>
               </Paper>
             </Grid>
@@ -399,7 +387,7 @@ const mapStateToProps = (state, props) => ({
   grievanceConfig: state.grievanceSocialProtection.grievanceConfig,
 });
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, journalize }, dispatch);
+const mapDispatchToProps = (dispatch) => bindActionCreators({ journalize }, dispatch);
 
 export { StyledAddTicketPage };
-export default connect(mapStateToProps, mapDispatchToProps)(AddTicketPage);
+export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(AddTicketPage));
