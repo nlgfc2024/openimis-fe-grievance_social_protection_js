@@ -3,8 +3,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/sort-comp */
-import React, { Component } from 'react';
-import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
+import React, { Component, createRef } from 'react';
+import PrintButton from './PrintButton';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -50,6 +50,7 @@ class TicketCommentPanel extends Component {
       comment: {},
       commenterType: null,
     };
+    this.printContentRef = createRef();
     this.rowsPerPageOptions = props.modulesManager.getConf(
       'fe-grievance_social_protection',
       'ticketFilter.rowsPerPageOptions',
@@ -193,7 +194,6 @@ class TicketCommentPanel extends Component {
       'ticket.dateCreated',
       'ticket.markAsResolved',
     ];
-    const canUseReactToPrint = typeof ReactToPrint === 'function' && !!PrintContextConsumer;
 
     const shouldHighlight = (row) => row?.isResolution;
 
@@ -296,21 +296,9 @@ class TicketCommentPanel extends Component {
                 commenterType={commenterType}
                 disabled={this.isReadOnly()}
               />
-              {canUseReactToPrint && (
-                <ReactToPrint content={() => this.componentRef}>
-                  <PrintContextConsumer>
-                    {({ handlePrint }) => (
-                      <IconButton
-                        variant="contained"
-                        component="label"
-                        onClick={handlePrint}
-                      >
-                        <PrintIcon />
-                      </IconButton>
-                    )}
-                  </PrintContextConsumer>
-                </ReactToPrint>
-              )}
+              <PrintButton contentRef={this.printContentRef}>
+                <PrintIcon />
+              </PrintButton>
             </div>
             <Table
               module={MODULE_NAME}
@@ -333,7 +321,7 @@ class TicketCommentPanel extends Component {
           </Paper>
           <div style={{ display: 'none' }}>
             <TicketPrintCommentTemplate
-              ref={(el) => (this.componentRef = el)}
+              ref={this.printContentRef}
               ticketComments={ticketComments}
             />
           </div>

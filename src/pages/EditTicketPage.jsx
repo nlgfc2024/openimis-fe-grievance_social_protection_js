@@ -4,8 +4,8 @@
 /* eslint-disable react/no-unused-state */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
-import React, { Component, useRef } from 'react';
-import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
+import React, { Component, createRef } from 'react';
+import PrintButton from '../components/PrintButton';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -47,6 +47,7 @@ class EditTicketPage extends Component {
       reporter: {},
       grievanceConfig: {},
     };
+    this.printContentRef = createRef();
   }
 
   componentDidMount() {
@@ -104,7 +105,6 @@ class EditTicketPage extends Component {
     } = this.props;
 
     const propsReadOnly = this.props.readOnly;
-    const canUseReactToPrint = typeof ReactToPrint === 'function' && !!PrintContextConsumer;
 
     const {
       stateEdited, reporter, comments,
@@ -233,21 +233,9 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                   <Grid size={4} style={{ textAlign: 'right' }}>
-                    {canUseReactToPrint && (
-                      <ReactToPrint content={() => this.componentRef}>
-                        <PrintContextConsumer>
-                          {({ handlePrint }) => (
-                            <IconButton
-                              variant="contained"
-                              component="label"
-                              onClick={handlePrint}
-                            >
-                              <PrintIcon />
-                            </IconButton>
-                          )}
-                        </PrintContextConsumer>
-                      </ReactToPrint>
-                    )}
+                    <PrintButton contentRef={this.printContentRef}>
+                      <PrintIcon />
+                    </PrintButton>
                   </Grid>
                 </Grid>
                 <Divider />
@@ -371,7 +359,7 @@ class EditTicketPage extends Component {
           </Grid>
           <div style={{ display: 'none' }}>
             <TicketPrintTemplate
-              ref={(el) => (this.componentRef = el)}
+              ref={this.printContentRef}
               ticket={stateEdited}
               reporter={reporter}
               comments={comments}
