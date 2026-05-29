@@ -10,7 +10,7 @@ import { styled } from '@mui/material/styles';
 import {
   useTranslations, useModulesManager,
 } from '@openimis/fe-core';
-import { MODULE_NAME } from '../constants';
+import { MODULE_NAME, EMPTY_STRING } from '../constants';
 
 const StyledTicketPrintTemplate = styled('div')(() => ({
   '& .topHeader': {

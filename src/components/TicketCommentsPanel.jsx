@@ -3,8 +3,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/sort-comp */
-import React, { Component } from 'react';
-import { useReactToPrint, createRef } from 'react-to-print';
+import React, { Component, createRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -312,7 +312,7 @@ class TicketCommentPanel extends Component {
                 commenterType={commenterType}
                 disabled={this.isReadOnly()}
               />
-              <PrintButton contentRef={() => this.componentRef} />
+              <PrintButton contentRef={this.printContentRef} />
             </div>
             <Table
               module={MODULE_NAME}

@@ -4,8 +4,8 @@
 /* eslint-disable react/no-unused-state */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
-import React, { Component } from 'react';
-import { useReactToPrint, createRef } from 'react-to-print';
+import React, { Component, createRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -253,7 +253,7 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                   <Grid size={4} style={{ textAlign: 'right' }}>
-                    <PrintButton contentRef={() => this.componentRef} />
+                    <PrintButton contentRef={this.printContentRef} />
                   </Grid>
                 </Grid>
                 <Divider />
