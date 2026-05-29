@@ -46,18 +46,18 @@ const DEFAULT_CONFIG = {
 
   ],
   'core.Router': [
-    { path: ROUTE_TICKET_TICKETS, text: "menu.grievance.grievances", id: 'grievance.grievances', component: TicketsPage, rights: [RIGHT_TICKET_SEARCH], icon: "ListAlt" },
+    { path: ROUTE_TICKET_TICKETS, text: "menu.grievance.grievances", id: 'grievance.grievances', component: TicketsPage, rights: [RIGHT_TICKET_SEARCH], icon: "forum" },
     { path: `${ROUTE_TICKET_TICKET}/:ticket_uuid?/:version?`, component: TicketPage, rights: [RIGHT_TICKET_SEARCH], icon: "ListAlt" },
     { path: ROUTE_TICKET_NEW_TICKET, text: "menu.grievance.add", id: 'grievance.add', component: TicketPage, rights: [RIGHT_TICKET_ADD], icon: "AddCircleOutline" },
   ],
-  'core.MainMenu': [{ name: 'GrievanceMainMenu', text: `${MODULE_NAME}.mainMenuGrievance`, id: "grievance.MainMenu" }],
-  'grievance.MainMenu': [
+  'core.MainMenu': [{ name: 'GrievanceMainMenu', text: `${MODULE_NAME}.mainMenuGrievance`, id: "grievance.MainMenu", icon: "forum" }],
+  'core.AppBarIcons': [
     {
+      id: "grievance.ticketsIcon",
+      icon: "forum",
       route: ROUTE_TICKET_TICKETS,
-    },
-    {
-      route: ROUTE_TICKET_NEW_TICKET,
-    },
+      text: `${MODULE_NAME}.mainMenuGrievance`,
+    }
   ],
 
 };

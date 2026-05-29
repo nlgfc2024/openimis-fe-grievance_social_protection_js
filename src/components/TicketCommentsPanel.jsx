@@ -3,8 +3,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/sort-comp */
-import React, { Component, createRef } from 'react';
-import PrintButton from './PrintButton';
+import React, { Component } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -40,6 +40,23 @@ const StyledTicketCommentPanel = styled('div')(({ theme }) => ({
     height: '100%',
   },
 }));
+
+// Small functional wrapper so we can use the v3 hook inside class components
+function PrintButton({ contentRef }) {
+  const handlePrint = useReactToPrint({
+    contentRef,
+  });
+
+  return (
+    <IconButton
+      variant="contained"
+      component="label"
+      onClick={handlePrint}
+    >
+      <PrintIcon />
+    </IconButton>
+  );
+}
 
 class TicketCommentPanel extends Component {
   constructor(props) {
@@ -94,10 +111,10 @@ class TicketCommentPanel extends Component {
     const prevTicketExists = !!prevProps.ticket;
     const currentTicketExists = !!this.props.ticket;
 
-    const ticketChanged = (!prevTicketExists && currentTicketExists) // New ticket appeared
+    const ticketChanged = (!prevTicketExists && currentTicketExists)
         || (prevTicketExists
             && currentTicketExists
-            && prevProps.ticket.uuid !== this.props.ticket.uuid); // Ticket UUID changed
+            && prevProps.ticket.uuid !== this.props.ticket.uuid);
 
     return ticketChanged;
   };
@@ -116,7 +133,6 @@ class TicketCommentPanel extends Component {
       } if (nbr < prevState.page) {
         return { page: prevState.page - 1 };
       }
-      // If nbr === prevState.page, return null to indicate no state update
       return null;
     }, () => {
       this.query();
@@ -296,9 +312,7 @@ class TicketCommentPanel extends Component {
                 commenterType={commenterType}
                 disabled={this.isReadOnly()}
               />
-              <PrintButton contentRef={this.printContentRef}>
-                <PrintIcon />
-              </PrintButton>
+              <PrintButton contentRef={() => this.componentRef} />
             </div>
             <Table
               module={MODULE_NAME}

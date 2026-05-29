@@ -4,8 +4,8 @@
 /* eslint-disable react/no-unused-state */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
-import React, { Component, createRef } from 'react';
-import PrintButton from '../components/PrintButton';
+import React, { Component } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -27,8 +27,10 @@ import _ from 'lodash';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
+
 const Save = GetIconComponent("Save");
 const PrintIcon = GetIconComponent("Print");
+
 const StyledEditTicketPage = styled('div')(({ theme }) => ({
   '& .paper': theme.paper?.paper ?? {},
   '& .tableTitle': theme.table?.title ?? {},
@@ -37,6 +39,23 @@ const StyledEditTicketPage = styled('div')(({ theme }) => ({
     height: '100%',
   },
 }));
+
+// Small functional wrapper for the print button (allows using the v3 hook from a class component)
+function PrintButton({ contentRef }) {
+  const handlePrint = useReactToPrint({
+    contentRef,
+  });
+
+  return (
+    <IconButton
+      variant="contained"
+      component="label"
+      onClick={handlePrint}
+    >
+      <PrintIcon />
+    </IconButton>
+  );
+}
 
 class EditTicketPage extends Component {
   constructor(props) {
@@ -107,8 +126,9 @@ class EditTicketPage extends Component {
     const propsReadOnly = this.props.readOnly;
 
     const {
-      stateEdited, reporter, comments,
+      stateEdited, reporter,
     } = this.state;
+
     return (
       <StyledEditTicketPage>
         <div className="page">
@@ -233,9 +253,7 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                   <Grid size={4} style={{ textAlign: 'right' }}>
-                    <PrintButton contentRef={this.printContentRef}>
-                      <PrintIcon />
-                    </PrintButton>
+                    <PrintButton contentRef={() => this.componentRef} />
                   </Grid>
                 </Grid>
                 <Divider />
@@ -362,7 +380,7 @@ class EditTicketPage extends Component {
               ref={this.printContentRef}
               ticket={stateEdited}
               reporter={reporter}
-              comments={comments}
+              comments={this.state.comments}
             />
           </div>
         </div>
@@ -371,7 +389,6 @@ class EditTicketPage extends Component {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 const mapStateToProps = (state, props) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
