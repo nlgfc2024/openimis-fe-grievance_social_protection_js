@@ -157,12 +157,13 @@ export function resolveTicketGQL(ticket) {
 }
 
 export function createTicket(ticket, grievanceConfig, clientMutationLabel) {
-  const resolutionTimeMap = {};
-  grievanceConfig.grievanceDefaultResolutionsByCategory.forEach((item) => {
-    resolutionTimeMap[item.category] = item.resolutionTime;
-  });
-  // eslint-disable-next-line no-param-reassign
-  ticket.resolution = resolutionTimeMap[ticket.category];
+  if (grievanceConfig?.grievanceDefaultResolutionsByCategory) {
+    const resolutionTimeMap = {};
+    grievanceConfig.grievanceDefaultResolutionsByCategory.forEach((item) => {
+      resolutionTimeMap[item.category] = item.resolutionTime;
+    });
+    ticket.resolution = resolutionTimeMap[ticket.category];
+  }
   const mutation = formatMutation('createTicket', formatTicketGQL(ticket), clientMutationLabel);
   const requestedDateTime = new Date();
   return graphql(mutation.payload, ['TICKET_MUTATION_REQ', 'TICKET_CREATE_TICKET_RESP', 'TICKET_MUTATION_ERR'], {

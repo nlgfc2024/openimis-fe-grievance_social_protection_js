@@ -72,7 +72,7 @@ class TicketForm extends Component {
     } else if (prevProps.ticketUuid && !this.props.ticketUuid) {
       this.setState({ ticket: this._newTicket(), lockNew: false, ticketUuid: null });
     } else if (prevProps.submittingMutation && !this.props.submittingMutation) {
-      this.props.journalize(this.props.mutation);
+      this.props.journalize({ ...this.props.mutation });
       if (this.props.mutation && !this.props.mutation.error) {
         this.props.coreAlert(
           formatMessage(this.props.intl, MODULE_NAME, 'ticket.save.success.title'),
@@ -103,6 +103,9 @@ class TicketForm extends Component {
   canSave = () => {
     if (!this.state.ticket.reporter) return false;
     if (!this.state.ticket.category) return false;
+    if (!this.state.ticket.title) return false;
+    if (!this.state.ticket.flags) return false;
+    if (!this.state.ticket.channel) return false;
     return true;
   };
 
