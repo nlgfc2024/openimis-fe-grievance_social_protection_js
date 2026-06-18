@@ -1,29 +1,28 @@
 import React, { useState } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { injectIntl } from 'react-intl';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import {
   PublishedComponent,
   TextInput,
   useTranslations,
   useModulesManager,
 } from '@openimis/fe-core';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import { MODULE_NAME } from '../constants';
 
-const styles = (theme) => ({
-  item: theme.paper.item,
-});
+const StyledGrievanceCommentDialog = styled('div')(({ theme }) => ({
+  '& .item': theme.paper?.item ?? {},
+}));
 
 function GrievanceCommentDialog({
-  classes,
   handleComment,
   openCommentModal,
   handleOpenModal,
@@ -37,12 +36,12 @@ function GrievanceCommentDialog({
   const { formatMessage } = useTranslations(MODULE_NAME, modulesManager);
   const [benefitPlan, setBenefitPlan] = useState(null);
   return (
-    <>
+    <StyledGrievanceCommentDialog>
       <Button
         onClick={handleOpenModal}
         variant="outlined"
         color="#DFEDEF"
-        className={classes.button}
+        className="button"
         disabled={disabled}
         style={{
           border: '0px',
@@ -74,7 +73,7 @@ function GrievanceCommentDialog({
             <div
               style={{ backgroundColor: '#DFEDEF', paddingLeft: '10px', paddingBottom: '10px' }}
             >
-              <Grid item xs={3} className={classes.item}>
+              <Grid size={3} className="item">
                 <GrievantTypePicker
                   module={MODULE_NAME}
                   label="type"
@@ -86,7 +85,7 @@ function GrievanceCommentDialog({
                 />
               </Grid>
               {commenterType === 'user' && (
-                <Grid item xs={6} className={classes.item}>
+                <Grid size={6} className="item">
                   <PublishedComponent
                     pubRef="admin.UserPicker"
                     value={comment.commenter}
@@ -97,7 +96,7 @@ function GrievanceCommentDialog({
                 </Grid>
               )}
               {commenterType === 'individual' && (
-                <Grid item xs={3} className={classes.item}>
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="individual.IndividualPicker"
                     value={comment.reporter}
@@ -110,7 +109,7 @@ function GrievanceCommentDialog({
               )}
               {commenterType === 'beneficiary' && (
               <>
-                <Grid item xs={3} className={classes.item}>
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="socialProtection.BenefitPlanPicker"
                     withNull
@@ -120,7 +119,7 @@ function GrievanceCommentDialog({
                   />
                 </Grid>
                 {benefitPlan && (
-                <Grid item xs={3} className={classes.item}>
+                <Grid size={3} className="item">
                   <PublishedComponent
                     pubRef="socialProtection.BeneficiaryPicker"
                     value={comment.reporter}
@@ -132,7 +131,7 @@ function GrievanceCommentDialog({
                 )}
               </>
               )}
-              <Grid item xs={12} className={classes.item}>
+              <Grid size={12} className="item">
                 <TextInput
                   label="ticket.comment"
                   value={comment.comment}
@@ -182,7 +181,7 @@ function GrievanceCommentDialog({
           </DialogActions>
         </form>
       </Dialog>
-    </>
+    </StyledGrievanceCommentDialog>
   );
 }
 
@@ -193,10 +192,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => bindActionCreators({
 }, dispatch);
 
+export { StyledGrievanceCommentDialog };
 export default injectIntl(
-  withTheme(
-    withStyles(styles)(
-      connect(mapStateToProps, mapDispatchToProps)(GrievanceCommentDialog),
-    ),
-  ),
+  connect(mapStateToProps, mapDispatchToProps)(GrievanceCommentDialog),
 );

@@ -6,8 +6,8 @@ import React, { Component, Fragment } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import { IconButton, Tooltip } from '@material-ui/core';
-import { withStyles, withTheme } from '@material-ui/core/styles';
+import { IconButton, Tooltip } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import {
   coreConfirm,
   formatMessageWithValues,
@@ -19,9 +19,10 @@ import {
   formatMessage,
   historyPush,
   decodeId,
+  GetIconComponent,
 } from '@openimis/fe-core';
-import EditIcon from '@material-ui/icons/Edit';
-// import AddIcon from '@material-ui/icons/Add';
+const EditIcon = GetIconComponent("Edit");
+// const AddIcon = GetIconComponent("Add");
 import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
 import { fetchTicketSummaries, resolveTicket } from '../actions';
 import { isEmptyObject } from '../utils/utils';
@@ -29,24 +30,24 @@ import { isEmptyObject } from '../utils/utils';
 import TicketFilter from './TicketFilter';
 import EnquiryDialog from './EnquiryDialog';
 
-const styles = (theme) => ({
-  paper: {
-    ...theme.paper.paper,
+const StyledTicketSearcher = styled('div')(({ theme }) => ({
+  '& .paper': {
+    ...theme.paper?.paper ?? {},
     margin: 0,
   },
-  paperHeader: {
-    ...theme.paper.header,
+  '& .paperHeader': {
+    ...theme.paper?.header ?? {},
     padding: 10,
   },
-  tableTitle: theme.table.title,
-  fab: theme.fab,
-  button: {
+  '& .tableTitle': theme.table?.title ?? {},
+  '& .fab': theme.fab ?? {},
+  '& .button': {
     margin: theme.spacing(1),
   },
-  item: {
+  '& .item': {
     padding: theme.spacing(1),
   },
-});
+}));
 
 class TicketSearcher extends Component {
   constructor(props) {
@@ -248,40 +249,42 @@ class TicketSearcher extends Component {
     );
 
     return (
-      <>
-        <EnquiryDialog
-          open={this.state.enquiryOpen}
-          chfid={this.state.chfid}
-          onClose={() => {
-            this.setState({ enquiryOpen: false, chfid: null });
-          }}
-        />
-        <Searcher
-          module={MODULE_NAME}
-          cacheFiltersKey={cacheFiltersKey}
-          FilterPane={filterPane}
-          filterPaneContributionsKey={filterPaneContributionsKey}
-          items={tickets}
-          itemsPageInfo={ticketsPageInfo}
-          fetchingItems={fetchingTickets}
-          fetchedItems={fetchedTickets}
-          errorItems={errorTickets}
-          tableTitle={formatMessageWithValues(intl, MODULE_NAME, 'ticketSummaries', { count })}
-          rowsPerPageOptions={this.rowsPerPageOptions}
-          defaultPageSize={this.defaultPageSize}
-          fetch={this.fetch}
-          rowIdentifier={this.rowIdentifier}
-          filtersToQueryParams={this.filtersToQueryParams}
-          defaultOrderBy="-dateCreated"
-          headers={this.headers}
-          itemFormatters={this.itemFormatters}
-          sorts={this.sorts}
-          rowDisabled={this.rowDisabled}
-          rowLocked={this.rowLocked}
-          onDoubleClick={(i) => !i.clientMutationId && onDoubleClick(i)}
-          reset={this.state.reset}
-        />
-      </>
+      <StyledTicketSearcher>
+        <>
+          <EnquiryDialog
+            open={this.state.enquiryOpen}
+            chfid={this.state.chfid}
+            onClose={() => {
+              this.setState({ enquiryOpen: false, chfid: null });
+            }}
+          />
+          <Searcher
+            module={MODULE_NAME}
+            cacheFiltersKey={cacheFiltersKey}
+            FilterPane={filterPane}
+            filterPaneContributionsKey={filterPaneContributionsKey}
+            items={tickets}
+            itemsPageInfo={ticketsPageInfo}
+            fetchingItems={fetchingTickets}
+            fetchedItems={fetchedTickets}
+            errorItems={errorTickets}
+            tableTitle={formatMessageWithValues(intl, MODULE_NAME, 'ticketSummaries', { count })}
+            rowsPerPageOptions={this.rowsPerPageOptions}
+            defaultPageSize={this.defaultPageSize}
+            fetch={this.fetch}
+            rowIdentifier={this.rowIdentifier}
+            filtersToQueryParams={this.filtersToQueryParams}
+            defaultOrderBy="-dateCreated"
+            headers={this.headers}
+            itemFormatters={this.itemFormatters}
+            sorts={this.sorts}
+            rowDisabled={this.rowDisabled}
+            rowLocked={this.rowLocked}
+            onDoubleClick={(i) => !i.clientMutationId && onDoubleClick(i)}
+            reset={this.state.reset}
+          />
+        </>
+      </StyledTicketSearcher>
     );
   }
 }
@@ -305,8 +308,9 @@ const mapDispatchToProps = (dispatch) => bindActionCreators(
   dispatch,
 );
 
+export { StyledTicketSearcher };
 export default withModulesManager(
   withHistory(
-    connect(mapStateToProps, mapDispatchToProps)(injectIntl(withTheme(withStyles(styles)(TicketSearcher)))),
+    connect(mapStateToProps, mapDispatchToProps)(injectIntl(TicketSearcher)),
   ),
 );

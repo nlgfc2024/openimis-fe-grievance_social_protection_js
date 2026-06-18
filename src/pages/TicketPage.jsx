@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 import {
   formatMessageWithValues, withModulesManager, withHistory, historyPush,
 } from '@openimis/fe-core';
@@ -11,10 +11,10 @@ import TicketForm from '../components/TicketForm';
 import { updateTicket, createTicket } from '../actions';
 import { RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT, TICKET_STATUSES } from '../constants';
 
-const styles = (theme) => ({
-  page: theme.page,
-  lockedPage: theme.page.locked,
-});
+const StyledTicketPage = styled('div')(({ theme }) => ({
+  '& .page': theme.page ?? {},
+  '& .lockedPage': theme.page?.locked ?? {},
+}));
 
 class TicketPage extends Component {
   add = () => {
@@ -49,22 +49,24 @@ class TicketPage extends Component {
 
   render() {
     const {
-      classes, modulesManager, history, rights, ticketUuid, overview, ticket, ticketVersion,
+      modulesManager, history, rights, ticketUuid, overview, ticket, ticketVersion,
     } = this.props;
     const readOnly = ticket?.status === TICKET_STATUSES.CLOSED || ticket?.isHistory;
     if (!(rights.includes(RIGHT_TICKET_EDIT) || rights.includes(RIGHT_TICKET_ADD))) return null;
     return (
-      <div className={`${readOnly ? classes.lockedPage : null} ${classes.page}`}>
-        <TicketForm
-          overview={overview}
-          ticketUuid={ticketUuid}
-          ticketVersion={ticketVersion}
-          readOnly={readOnly}
-          back={() => historyPush(modulesManager, history, 'grievanceSocialProtection.route.tickets')}
-          add={rights.includes(RIGHT_TICKET_ADD) ? this.add : null}
-          save={rights.includes(RIGHT_TICKET_EDIT) ? this.save : null}
-        />
-      </div>
+      <StyledTicketPage>
+        <div className={`${readOnly ? 'lockedPage' : ''} page`}>
+          <TicketForm
+            overview={overview}
+            ticketUuid={ticketUuid}
+            ticketVersion={ticketVersion}
+            readOnly={readOnly}
+            back={() => historyPush(modulesManager, history, 'grievanceSocialProtection.route.tickets')}
+            add={rights.includes(RIGHT_TICKET_ADD) ? this.add : null}
+            save={rights.includes(RIGHT_TICKET_EDIT) ? this.save : null}
+          />
+        </div>
+      </StyledTicketPage>
     );
   }
 }
@@ -78,6 +80,7 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, updateTicket }, dispatch);
 
+export { StyledTicketPage };
 export default withHistory(withModulesManager(connect(mapStateToProps, mapDispatchToProps)(
-  injectIntl(withTheme(withStyles(styles)(TicketPage))),
+  injectIntl(TicketPage),
 )));

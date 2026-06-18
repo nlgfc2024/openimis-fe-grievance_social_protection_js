@@ -2,11 +2,11 @@
 /* eslint-disable camelcase */
 /* eslint-disable import/prefer-default-export */
 import React from 'react';
-import { ListAlt, AddCircleOutline } from '@material-ui/icons';
-import { FormattedMessage } from '@openimis/fe-core';
+import { FormattedMessage, GetIconComponent } from '@openimis/fe-core';
+const ListAlt = GetIconComponent("ListAlt");
+const AddCircleOutline = GetIconComponent("AddCircleOutline");
 import messages_en from './translations/en.json';
 import reducer from './reducer';
-import GrievanceMainMenu from './menu/GrievanceMainMenu';
 import TicketsPage from './pages/TicketsPage';
 import TicketPage from './pages/TicketPage';
 import TicketSearcher from './components/TicketSearcher';
@@ -46,26 +46,18 @@ const DEFAULT_CONFIG = {
 
   ],
   'core.Router': [
-    { path: ROUTE_TICKET_TICKETS, component: TicketsPage },
-    { path: `${ROUTE_TICKET_TICKET}/:ticket_uuid?/:version?`, component: TicketPage },
-    { path: `${ROUTE_TICKET_NEW_TICKET}`, component: TicketPage },
+    { path: ROUTE_TICKET_TICKETS, text: "menu.grievance.grievances", id: 'grievance.grievances', component: TicketsPage, rights: [RIGHT_TICKET_SEARCH], icon: "forum" },
+    { path: `${ROUTE_TICKET_TICKET}/:ticket_uuid?/:version?`, component: TicketPage, rights: [RIGHT_TICKET_SEARCH], icon: "ListAlt" },
+    { path: ROUTE_TICKET_NEW_TICKET, text: "menu.grievance.add", id: 'grievance.add', component: TicketPage, rights: [RIGHT_TICKET_ADD], icon: "AddCircleOutline" },
   ],
-  'core.MainMenu': [{ name: 'GrievanceMainMenu', component: GrievanceMainMenu }],
-  'grievance.MainMenu': [
+  'core.MainMenu': [{ name: 'GrievanceMainMenu', text: `${MODULE_NAME}.mainMenuGrievance`, id: "grievance.MainMenu", icon: "forum" }],
+  'core.AppBarIcons': [
     {
-      text: <FormattedMessage module={MODULE_NAME} id="menu.grievance.grievances" />,
-      icon: <ListAlt />,
-      route: `/${ROUTE_TICKET_TICKETS}`,
-      filter: (rights) => rights.includes(RIGHT_TICKET_SEARCH),
-      id: 'grievance.grievances',
-    },
-    {
-      text: <FormattedMessage module={MODULE_NAME} id="menu.grievance.add" />,
-      icon: <AddCircleOutline />,
-      route: `/${ROUTE_TICKET_NEW_TICKET}`,
-      filter: (rights) => rights.includes(RIGHT_TICKET_ADD),
-      id: 'grievance.add',
-    },
+      id: "grievance.ticketsIcon",
+      icon: "forum",
+      route: ROUTE_TICKET_TICKETS,
+      text: `${MODULE_NAME}.mainMenuGrievance`,
+    }
   ],
 
 };

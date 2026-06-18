@@ -3,10 +3,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/sort-comp */
-import React, { Component } from 'react';
-import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
-import PrintIcon from '@material-ui/icons/Print';
-import { withStyles, withTheme } from '@material-ui/core/styles';
+import React, { Component, createRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { styled } from '@mui/material/styles';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
@@ -18,26 +17,46 @@ import {
   Table,
   withHistory,
   withModulesManager,
+  GetIconComponent,
 } from '@openimis/fe-core';
 import {
   IconButton, Paper, Tooltip,
-} from '@material-ui/core';
-import ReplayIcon from '@material-ui/icons/Replay';
-import DoneIcon from '@material-ui/icons/Done';
+} from '@mui/material';
+const ReplayIcon = GetIconComponent("Replay");
+const DoneIcon = GetIconComponent("Done");
+const PrintIcon = GetIconComponent("Print");
+
 import { createTicketComment, fetchComments, resolveGrievanceByComment } from '../actions';
 import GrievanceCommentDialog from '../dialogs/GrievanceCommentDialog';
 import { isEmptyObject } from '../utils/utils';
 import { MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintCommentTemplate from './TicketPrintCommentTemplate';
 
-const styles = (theme) => ({
-  paper: theme.paper.paper,
-  tableTitle: theme.table.title,
-  item: theme.table.item,
-  fullHeight: {
+const StyledTicketCommentPanel = styled('div')(({ theme }) => ({
+  '& .paper': theme.paper?.paper ?? {},
+  '& .tableTitle': theme.table?.title ?? {},
+  '& .item': theme.table?.item ?? {},
+  '& .fullHeight': {
     height: '100%',
   },
-});
+}));
+
+// Small functional wrapper so we can use the v3 hook inside class components
+function PrintButton({ contentRef }) {
+  const handlePrint = useReactToPrint({
+    contentRef,
+  });
+
+  return (
+    <IconButton
+      variant="contained"
+      component="label"
+      onClick={handlePrint}
+    >
+      <PrintIcon />
+    </IconButton>
+  );
+}
 
 class TicketCommentPanel extends Component {
   constructor(props) {
@@ -48,6 +67,7 @@ class TicketCommentPanel extends Component {
       comment: {},
       commenterType: null,
     };
+    this.printContentRef = createRef();
     this.rowsPerPageOptions = props.modulesManager.getConf(
       'fe-grievance_social_protection',
       'ticketFilter.rowsPerPageOptions',
@@ -91,10 +111,10 @@ class TicketCommentPanel extends Component {
     const prevTicketExists = !!prevProps.ticket;
     const currentTicketExists = !!this.props.ticket;
 
-    const ticketChanged = (!prevTicketExists && currentTicketExists) // New ticket appeared
+    const ticketChanged = (!prevTicketExists && currentTicketExists)
         || (prevTicketExists
             && currentTicketExists
-            && prevProps.ticket.uuid !== this.props.ticket.uuid); // Ticket UUID changed
+            && prevProps.ticket.uuid !== this.props.ticket.uuid);
 
     return ticketChanged;
   };
@@ -113,7 +133,6 @@ class TicketCommentPanel extends Component {
       } if (nbr < prevState.page) {
         return { page: prevState.page - 1 };
       }
-      // If nbr === prevState.page, return null to indicate no state update
       return null;
     }, () => {
       this.query();
@@ -181,7 +200,7 @@ class TicketCommentPanel extends Component {
 
   render() {
     const {
-      intl, classes,
+      intl,
       errorTicketComments, ticketComments,
     } = this.props;
 
@@ -273,65 +292,55 @@ class TicketCommentPanel extends Component {
     const { comment, commenterType } = this.state;
 
     return (
-      <div className={classes.page}>
+      <StyledTicketCommentPanel>
+        <div className="page">
 
-        <ProgressOrError error={errorTicketComments} />
+          <ProgressOrError error={errorTicketComments} />
 
-        <Paper className={classes.paper}>
-          <div style={{ textAlign: 'end', background: '#b7d4d8', height: '2.5em' }}>
-            <IconButton variant="contained" component="label" onClick={this.reload} disabled={this.isReadOnly()}>
-              <ReplayIcon />
-            </IconButton>
-            <GrievanceCommentDialog
-              handleComment={this.handleComment}
-              openCommentModal={this.state.openCommentModal}
-              handleOpenModal={this.handleOpenModal}
-              updateCommentAttribute={this.updateCommentAttribute}
-              comment={comment}
-              updateCommenterType={this.updateCommenterType}
-              commenterType={commenterType}
-              disabled={this.isReadOnly()}
+          <Paper className="paper">
+            <div style={{ textAlign: 'end', background: '#b7d4d8', height: '2.5em' }}>
+              <IconButton variant="contained" component="label" onClick={this.reload} disabled={this.isReadOnly()}>
+                <ReplayIcon />
+              </IconButton>
+              <GrievanceCommentDialog
+                handleComment={this.handleComment}
+                openCommentModal={this.state.openCommentModal}
+                handleOpenModal={this.handleOpenModal}
+                updateCommentAttribute={this.updateCommentAttribute}
+                comment={comment}
+                updateCommenterType={this.updateCommenterType}
+                commenterType={commenterType}
+                disabled={this.isReadOnly()}
+              />
+              <PrintButton contentRef={this.printContentRef} />
+            </div>
+            <Table
+              module={MODULE_NAME}
+              fetch={this.props.fetchComments}
+              header={formatMessage(this.props.intl, MODULE_NAME, 'TicketCommentsPanel.table.header')}
+              headers={headers}
+              itemFormatters={itemFormatters}
+              items={this.isReadOnly() ? this.filterComments(ticketComments) : ticketComments}
+              withPagination
+              page={this.state.page}
+              pageSize={this.state.pageSize}
+              onChangePage={this.onChangePage}
+              onChangeRowsPerPage={this.onChangeRowsPerPage}
+              rowSecondaryHighlighted={shouldHighlight}
+              rowsPerPageOptions={this.rowsPerPageOptions}
+              defaultPageSize={this.defaultPageSize}
+              rights={this.rights}
+              defaultOrderBy="-dateCreated"
             />
-            <ReactToPrint content={() => this.componentRef}>
-              <PrintContextConsumer>
-                {({ handlePrint }) => (
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    onClick={handlePrint}
-                  >
-                    <PrintIcon />
-                  </IconButton>
-                )}
-              </PrintContextConsumer>
-            </ReactToPrint>
+          </Paper>
+          <div style={{ display: 'none' }}>
+            <TicketPrintCommentTemplate
+              ref={this.printContentRef}
+              ticketComments={ticketComments}
+            />
           </div>
-          <Table
-            module={MODULE_NAME}
-            fetch={this.props.fetchComments}
-            header={formatMessage(this.props.intl, MODULE_NAME, 'TicketCommentsPanel.table.header')}
-            headers={headers}
-            itemFormatters={itemFormatters}
-            items={this.isReadOnly() ? this.filterComments(ticketComments) : ticketComments}
-            withPagination
-            page={this.state.page}
-            pageSize={this.state.pageSize}
-            onChangePage={this.onChangePage}
-            onChangeRowsPerPage={this.onChangeRowsPerPage}
-            rowSecondaryHighlighted={shouldHighlight}
-            rowsPerPageOptions={this.rowsPerPageOptions}
-            defaultPageSize={this.defaultPageSize}
-            rights={this.rights}
-            defaultOrderBy="-dateCreated"
-          />
-        </Paper>
-        <div style={{ display: 'none' }}>
-          <TicketPrintCommentTemplate
-            ref={(el) => (this.componentRef = el)}
-            ticketComments={ticketComments}
-          />
         </div>
-      </div>
+      </StyledTicketCommentPanel>
     );
   }
 }
@@ -348,6 +357,7 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
   fetchComments, createTicketComment, resolveGrievanceByComment,
 }, dispatch);
 
+export { StyledTicketCommentPanel };
 export default withHistory(withModulesManager(connect(mapStateToProps, mapDispatchToProps)(
-  injectIntl(withTheme(withStyles(styles)(TicketCommentPanel))),
+  injectIntl(TicketCommentPanel),
 )));
