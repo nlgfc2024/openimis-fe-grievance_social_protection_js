@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { injectIntl } from 'react-intl';
 import Cascader from 'rc-cascader';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ClearIcon from '@material-ui/icons/Clear';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import AutorenewIcon from '@material-ui/icons/Autorenew';
-import { withStyles } from '@material-ui/core/styles';
-import { TextField, IconButton, InputAdornment } from '@material-ui/core';
-import { useTranslations, useGraphqlQuery } from '@openimis/fe-core';
+import { styled } from '@mui/material/styles';
+import { TextField, IconButton, InputAdornment } from '@mui/material';
+import { useTranslations, useGraphqlQuery, GetIconComponent } from '@openimis/fe-core';
 
-const styles = () => ({
+const ArrowDropDownIcon = GetIconComponent('ArrowDropDown');
+const ClearIcon = GetIconComponent('Clear');
+const KeyboardArrowRightIcon = GetIconComponent('KeyboardArrowRight');
+const AutorenewIcon = GetIconComponent('Autorenew');
+
+const StyledDiv = styled('div')(({
   root: {
     width: '100%',
   },
@@ -19,7 +21,7 @@ const styles = () => ({
   spin: {
     animation: '$spin 1s linear infinite',
   },
-});
+}));
 
 function CategoryPicker(props) {
   const {
@@ -86,7 +88,7 @@ function CategoryPicker(props) {
   };
 
   return (
-    <div className={classes.root}>
+    <StyledDiv>
       <Cascader
         value={defaultValue()}
         options={options}
@@ -120,8 +122,8 @@ function CategoryPicker(props) {
           }}
         />
       </Cascader>
-    </div>
+    </StyledDiv>
   );
 }
 
-export default withStyles(styles)(CategoryPicker);
+export default injectIntl(CategoryPicker);
