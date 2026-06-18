@@ -266,7 +266,7 @@ export function createTicketComment(ticketComment, ticket, commenterType, client
   const requestedDateTime = new Date();
   return graphql(
     mutation.payload,
-    ['TICKET_ATTACHMENT_MUTATION_REQ', 'TICKET_CREATE_TICKET_ATTACHMENT_RESP', 'TICKET_ATTACHMENT_MUTATION_ERR'],
+    ['TICKET_COMMENT_MUTATION_REQ', 'TICKET_CREATE_COMMENT_RESP', 'TICKET_COMMENT_MUTATION_ERR'],
     {
       clientMutationId: mutation.clientMutationId,
       clientMutationLabel,
