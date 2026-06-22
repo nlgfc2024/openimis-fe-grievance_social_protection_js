@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { injectIntl } from 'react-intl';
 import Cascader from 'rc-cascader';
-import { styled } from '@mui/material/styles';
+import { styled, keyframes } from '@mui/material/styles';
 import { TextField, IconButton, InputAdornment } from '@mui/material';
 import { useTranslations, useGraphqlQuery, GetIconComponent } from '@openimis/fe-core';
 
@@ -10,18 +10,22 @@ const ClearIcon = GetIconComponent('Clear');
 const KeyboardArrowRightIcon = GetIconComponent('KeyboardArrowRight');
 const AutorenewIcon = GetIconComponent('Autorenew');
 
-const StyledDiv = styled('div')(({
-  root: {
-    width: '100%',
-  },
-  '@keyframes spin': {
-    from: { transform: 'rotate(0deg)' },
-    to: { transform: 'rotate(360deg)' },
-  },
-  spin: {
-    animation: '$spin 1s linear infinite',
-  },
-}));
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const StyledDiv = styled('div')({
+  width: '100%',
+});
+
+const SpinningIcon = styled(AutorenewIcon)({
+  animation: `${spin} 1s linear infinite`,
+});
 
 function CategoryPicker(props) {
   const {
@@ -31,7 +35,6 @@ function CategoryPicker(props) {
     value,
     label,
     placeholder,
-    classes,
   } = props;
   const { formatMessage } = useTranslations('ticket');
   const [inputValue, setInputValue] = useState(value ?? '');
@@ -97,7 +100,7 @@ function CategoryPicker(props) {
         getPopupContainer={(trigger) => trigger.parentElement}
         disabled={readOnly || isLoading}
         expandIcon={<KeyboardArrowRightIcon fontSize="small" />}
-        loadingIcon={<AutorenewIcon fontSize="small" className={classes.spin} />}
+        loadingIcon={<SpinningIcon fontSize="small" />}
       >
         <TextField
           label={label || formatMessage('CategoryPicker.label')}
