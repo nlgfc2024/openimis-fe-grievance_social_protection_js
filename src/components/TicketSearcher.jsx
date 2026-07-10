@@ -139,64 +139,45 @@ class TicketSearcher extends Component {
       (ticket) => ticket.code,
       (ticket) => ticket.title,
       (ticket) => {
-        const reporter = typeof ticket.reporter === 'object'
-          ? ticket.reporter : JSON.parse(JSON.parse(ticket.reporter || '{}') || '{}');
-        let picker = '';
+        let reporter = ticket.reporter;
+
+        if (typeof reporter === 'string') {
+          try {
+            reporter = JSON.parse(JSON.parse(reporter));
+          } catch (e) {
+            try {
+              reporter = JSON.parse(reporter);
+            } catch (e2) {
+              reporter = {};
+            }
+          }
+        }
+
         if (ticket.reporterTypeName === 'individual') {
-          picker = (
-            <PublishedComponent
-              pubRef="individual.IndividualPicker"
-              readOnly
-              withNull
-              label="ticket.reporter"
-              required
-              value={
-                reporter !== undefined
-                && reporter !== null ? (isEmptyObject(reporter)
-                    ? null : reporter) : null
-              }
-            />
-          );
+          const firstName = reporter?.firstName || ticket.reporterFirstName;
+          const lastName = reporter?.lastName || ticket.reporterLastName;
+
+          return [firstName, lastName].filter(Boolean).join(' ');
         }
+
         if (ticket.reporterTypeName === 'beneficiary') {
-          picker = (
-            <PublishedComponent
-              pubRef="socialProtection.BeneficiaryPicker"
-              readOnly
-              withNull
-              label="ticket.reporter"
-              required
-              value={
-                {
-                  individual: {
-                    firstName: ticket.reporterFirstName,
-                    lastName: ticket.reporterLastName,
-                    dob: ticket.reporterDob,
-                  },
-                }
-              }
-            />
-          );
+          return [ticket.reporterFirstName, ticket.reporterLastName]
+            .filter(Boolean)
+            .join(' ');
         }
+
         if (ticket.reporterTypeName === 'user') {
-          picker = (
-            <PublishedComponent
-              pubRef="admin.UserPicker"
-              readOnly
-              value={
-                reporter !== undefined
-                && reporter !== null ? (isEmptyObject(reporter)
-                    ? null : reporter) : null
-              }
-              module="core"
-              label="ticket.reporter"
-            />
-          );
+          const firstName = reporter?.firstName;
+          const lastName = reporter?.lastName;
+
+          return [firstName, lastName].filter(Boolean).join(' ');
         }
-        if (ticket.reporterTypeName === null) {
-          picker = `${formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser')}`;
+
+        if (!ticket.reporterTypeName) {
+          return formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser');
         }
-        return picker;
+
+        return '';
       },
       (ticket) => ticket.priority,
       (ticket) => ticket.status,
@@ -224,6 +205,7 @@ class TicketSearcher extends Component {
         </Tooltip>
       ));
     }
+
     return formatters;
   };
 

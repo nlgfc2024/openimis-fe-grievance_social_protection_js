@@ -21,11 +21,13 @@ class TicketPage extends Component {
     historyPush(this.props.modulesManager, this.props.history, 'grievance.route.ticket');
   };
 
+  grievanceConfig = this.props.modulesManager.getConf('grievanceConfig', 'fe-grievance', {});
+
   save = (ticket) => {
     if (!ticket.id) {
       this.props.createTicket(
-        this.props.modulesManager,
         ticket,
+        this.grievanceConfig,
         formatMessageWithValues(
           this.props.intl,
           'ticket',
@@ -35,7 +37,6 @@ class TicketPage extends Component {
       );
     } else {
       this.props.updateTicket(
-        this.props.modulesManager,
         ticket,
         formatMessageWithValues(
           this.props.intl,
