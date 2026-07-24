@@ -157,7 +157,6 @@ class TicketFilter extends Component {
             <Grid item xs={3} className={classes.item}>
               <PublishedComponent
                 pubRef="grievanceSocialProtection.TicketStatusPicker"
-                label="ticket.ticketStatus"
                 value={this._filterValue('status')}
                 withNull
                 onChange={(v) => this.debouncedOnChangeFilter([

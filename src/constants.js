@@ -2,18 +2,12 @@ export const TICKET_STATUSES = {
   RECEIVED: 'RECEIVED',
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  REFERRED: 'REFERRED',
   RESOLVED: 'RESOLVED',
   CLOSED: 'CLOSED',
 };
-export const TICKET_STATUS = [
-  TICKET_STATUSES.RECEIVED,
-  TICKET_STATUSES.OPEN,
-  TICKET_STATUSES.IN_PROGRESS,
-  TICKET_STATUSES.RESOLVED,
-  TICKET_STATUSES.CLOSED,
-];
 
-export const TICKET_PRIORITY = ['Critical', 'High', 'Normal', 'Low'];
+export const TICKET_PRIORITY = ['Low', 'Medium', 'High', 'Critical'];
 
 export const RIGHT_TICKET = 127000;
 export const RIGHT_TICKET_SEARCH = 127000;

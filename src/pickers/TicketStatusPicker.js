@@ -1,32 +1,54 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Component } from 'react';
-import { ConstantBasedPicker } from '@openimis/fe-core';
+import React, { useState } from 'react';
+import { useTranslations, Autocomplete, useGraphqlQuery } from '@openimis/fe-core';
 
-import { TICKET_STATUS } from '../constants';
+function TicketStatusPicker(props) {
+  const {
+    onChange,
+    readOnly,
+    required,
+    withLabel = true,
+    withPlaceholder,
+    value,
+    label,
+    filterOptions,
+    filterSelectedOptions,
+    placeholder,
+  } = props;
+  const [searchString, setSearchString] = useState(null);
+  const { formatMessage } = useTranslations('ticket');
 
-// eslint-disable-next-line react/prefer-stateless-function
-class TicketStatusPicker extends Component {
-  render() {
-    const {
-      readOnly = false,
-      withNull = false,
-      value,
-      onChange,
-    } = this.props;
+  const { isLoading, data, error } = useGraphqlQuery(
+    `query TicketStatusPicker {
+        grievanceConfig{
+          ticketStatuses{code, label, initial, terminal, requiresReferralEntity}
+        }
+    }`,
+    { searchString, first: 20 },
+    { skip: true },
+  );
 
-    return (
-      <ConstantBasedPicker
-        module="grievance"
-        label="ticket.ticketStatus"
-        constants={TICKET_STATUS}
-        readOnly={readOnly}
-        value={value}
-        withNull={withNull}
-        onChange={(option) => onChange(option, option ? `${option}` : null)}
-        {...this.props}
-      />
-    );
-  }
+  const statuses = data?.grievanceConfig?.ticketStatuses ?? [];
+  const labelByCode = statuses.reduce((acc, status) => ({ ...acc, [status.code]: status.label }), {});
+
+  return (
+    <Autocomplete
+      required={required}
+      placeholder={placeholder}
+      label={label ?? formatMessage('ticket.ticketStatus')}
+      error={error}
+      withLabel={withLabel}
+      withPlaceholder={withPlaceholder}
+      readOnly={readOnly}
+      options={statuses.map((status) => status.code)}
+      isLoading={isLoading}
+      value={value}
+      getOptionLabel={(option) => labelByCode[option] ?? option}
+      onChange={(option) => onChange(option, option ? `${option}` : null)}
+      filterOptions={filterOptions}
+      filterSelectedOptions={filterSelectedOptions}
+      onInputChange={setSearchString}
+    />
+  );
 }
 
 export default TicketStatusPicker;
