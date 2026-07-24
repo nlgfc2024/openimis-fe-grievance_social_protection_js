@@ -16,6 +16,14 @@ const GRIEVANCE_CONFIGURATION_PROJECTION = () => [
   'grievanceFlags',
   'grievanceChannels',
   'grievanceDefaultResolutionsByCategory{category, resolutionTime}',
+  'grievanceCategoryStaffRoles{category, roleIds, strategy, scope}',
+  'ticketStatuses{code, label, initial, terminal, requiresReferralEntity}',
+  'referralEntities',
+  'participantFields{key, label, source}',
+  'searchFilters',
+  'searchResultColumns{key, label}',
+  'sla',
+  'enableExport',
 ];
 
 const CATEGORY_FULL_PROJECTION = () => [
