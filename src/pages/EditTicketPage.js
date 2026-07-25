@@ -29,6 +29,7 @@ import { Save } from '@material-ui/icons';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
+import ParticipantPanel from '../components/ParticipantPanel';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -78,16 +79,6 @@ class EditTicketPage extends Component {
     this.setState((state) => ({
       stateEdited: { ...state.stateEdited, [k]: v },
     }));
-  };
-
-  extractFieldFromJsonExt = (reporter, field) => {
-    if (reporter) {
-      if (reporter.jsonExt) {
-        return reporter.jsonExt[field] || '';
-      }
-      return '';
-    }
-    return '';
   };
 
   doesTicketChange = () => {
@@ -140,63 +131,41 @@ class EditTicketPage extends Component {
               <Divider />
               <Grid container className={classes.item}>
                 {stateEdited.reporterTypeName === 'individual' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={reporter && reporter.individual
-                        ? `${reporter.individual.firstName} ${reporter.individual.lastName} ${reporter.individual.dob}`
-                        : reporter
-                          ? `${reporter.firstName} ${reporter.lastName} ${reporter.dob}`
-                          : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(reporter, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(reporter, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                </>
+                  <ParticipantPanel
+                    participantFields={this.props.grievanceConfig?.participantFields}
+                    reporter={reporter}
+                    ticketJsonExt={stateEdited.jsonExt}
+                  />
                 )}
                 {stateEdited.reporterTypeName === 'beneficiary' && (
-                <PublishedComponent
-                  pubRef="socialProtection.BeneficiaryPicker"
-                  onChange={(v) => this.updateAttribute('reporter', v)}
-                  readOnly
-                  value={
-                    {
+                <>
+                  <PublishedComponent
+                    pubRef="socialProtection.BeneficiaryPicker"
+                    onChange={(v) => this.updateAttribute('reporter', v)}
+                    readOnly
+                    value={
+                      {
+                        individual: {
+                          firstName: stateEdited.reporterFirstName,
+                          lastName: stateEdited.reporterLastName,
+                          dob: stateEdited.reporterDob,
+                        },
+                      }
+                    }
+                    module={MODULE_NAME}
+                  />
+                  <ParticipantPanel
+                    participantFields={this.props.grievanceConfig?.participantFields}
+                    reporter={{
                       individual: {
                         firstName: stateEdited.reporterFirstName,
                         lastName: stateEdited.reporterLastName,
                         dob: stateEdited.reporterDob,
                       },
-                    }
-                  }
-                  module={MODULE_NAME}
-                />
+                    }}
+                    ticketJsonExt={stateEdited.jsonExt}
+                  />
+                </>
                 )}
                 {stateEdited.reporterTypeName === 'user' && (
                 <Grid item xs={6} className={classes.item}>

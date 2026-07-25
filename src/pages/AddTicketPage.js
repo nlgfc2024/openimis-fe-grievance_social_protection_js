@@ -16,6 +16,7 @@ import {
 import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
+import ParticipantPanel from '../components/ParticipantPanel';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -58,15 +59,6 @@ class AddTicketPage extends Component {
       stateEdited: { ...state.stateEdited, [k]: v },
       isSaved: false, // Reset isSaved when form is modified
     }));
-  };
-
-  // eslint-disable-next-line class-methods-use-this
-  extractFieldFromJsonExt = (stateEdited, field) => {
-    if (stateEdited && stateEdited.reporter && stateEdited.reporter.jsonExt) {
-      const jsonExt = JSON.parse(stateEdited.reporter.jsonExt || '{}');
-      return jsonExt[field] || '';
-    }
-    return '';
   };
 
   updateTypeOfGrievant = (field, value) => {
@@ -188,89 +180,11 @@ class AddTicketPage extends Component {
               </Grid>
               <Divider />
               <Grid container className={classes.item}>
-                {grievantType === 'individual' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={!!stateEdited
-                        && !!stateEdited.reporter
-                        // eslint-disable-next-line max-len
-                        ? `${stateEdited.reporter.firstName} ${stateEdited.reporter.lastName} ${stateEdited.reporter.dob}`
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                </>
-                )}
-                {grievantType === 'beneficiary' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={!!stateEdited
-                        && !!stateEdited.reporter
-                        // eslint-disable-next-line max-len
-                        ? `${stateEdited.reporter.individual.firstName} ${stateEdited.reporter.individual.lastName} ${stateEdited.reporter.individual.dob}`
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(stateEdited, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                </>
+                {(grievantType === 'individual' || grievantType === 'beneficiary') && (
+                  <ParticipantPanel
+                    participantFields={this.props.grievanceConfig?.participantFields}
+                    reporter={stateEdited.reporter}
+                  />
                 )}
               </Grid>
             </Paper>
