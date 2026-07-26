@@ -4,7 +4,10 @@ import React, { Component } from 'react';
 import _debounce from 'lodash/debounce';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import { injectIntl } from 'react-intl';
-import { Grid, Checkbox, FormControlLabel } from '@material-ui/core';
+import {
+  Grid, Checkbox, FormControlLabel, Button,
+} from '@material-ui/core';
+import TuneIcon from '@material-ui/icons/Tune';
 import {
   withModulesManager,
   Contributions,
@@ -15,6 +18,7 @@ import {
   formatMessage,
 } from '@openimis/fe-core';
 import { MODULE_NAME } from '../constants';
+import TicketAdvancedCriteriaDialog, { buildCustomFiltersGQLFilter } from './TicketAdvancedCriteriaDialog';
 
 const styles = (theme) => ({
   dialogTitle: theme.dialog.title,
@@ -31,6 +35,10 @@ const styles = (theme) => ({
 const TICKET_FILTER_CONTRIBUTION_KEY = 'ticket.Filter';
 
 class TicketFilter extends Component {
+  state = {
+    advancedCriteriaOpen: false,
+  };
+
   debouncedOnChangeFilter = _debounce(
     this.props.onChangeFilters,
     this.props.modulesManager.getConf('fe-grievance_social_protection', 'debounceTime', 800),
@@ -66,6 +74,22 @@ class TicketFilter extends Component {
   _isFilterEnabled = (key) => {
     const { searchFilters } = this.props;
     return !searchFilters || searchFilters.includes(key);
+  };
+
+  _isAdvancedCriteriaEnabled = () => (
+    this._isFilterEnabled('formNumber')
+    || this._isFilterEnabled('location')
+    || this._isFilterEnabled('nationalId')
+  );
+
+  _onApplyAdvancedCriteria = (conditions) => {
+    this.props.onChangeFilters([
+      {
+        id: 'customFilters',
+        value: conditions,
+        filter: buildCustomFiltersGQLFilter(conditions),
+      },
+    ]);
   };
 
   render() {
@@ -263,6 +287,22 @@ class TicketFilter extends Component {
                     )}
           />
         </Grid>
+        {this._isAdvancedCriteriaEnabled() && (
+          <Grid item xs={2} className={classes.item}>
+            <Button
+              variant="outlined"
+              startIcon={<TuneIcon />}
+              onClick={() => this.setState({ advancedCriteriaOpen: true })}
+            >
+              {formatMessage(this.props.intl, MODULE_NAME, 'ticket.advancedCriteria.button')}
+            </Button>
+            <TicketAdvancedCriteriaDialog
+              open={this.state.advancedCriteriaOpen}
+              onClose={() => this.setState({ advancedCriteriaOpen: false })}
+              onApply={this._onApplyAdvancedCriteria}
+            />
+          </Grid>
+        )}
         <Contributions
           filters={filters}
           onChangeFilters={onChangeFilters}
