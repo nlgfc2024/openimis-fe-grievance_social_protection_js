@@ -63,6 +63,11 @@ class TicketFilter extends Component {
     this.props.setShowHistoryFilter(value);
   };
 
+  _isFilterEnabled = (key) => {
+    const { searchFilters } = this.props;
+    return !searchFilters || searchFilters.includes(key);
+  };
+
   render() {
     const {
       classes, filters, onChangeFilters,
@@ -129,6 +134,7 @@ class TicketFilter extends Component {
             </Grid>
                       )}
         />
+        {this._isFilterEnabled('priority') && (
         <ControlledField
           module={MODULE_NAME}
           id="ticketFilter.priority"
@@ -150,6 +156,8 @@ class TicketFilter extends Component {
             </Grid>
                       )}
         />
+        )}
+        {this._isFilterEnabled('status') && (
         <ControlledField
           module={MODULE_NAME}
           id="ticket.status"
@@ -170,6 +178,7 @@ class TicketFilter extends Component {
             </Grid>
                       )}
         />
+        )}
         <ControlledField
           module={MODULE_NAME}
           id="ticket.category"
@@ -190,6 +199,50 @@ class TicketFilter extends Component {
             </Grid>
                       )}
         />
+        {this._isFilterEnabled('dateRange') && (
+        <>
+          <ControlledField
+            module={MODULE_NAME}
+            id="ticketFilter.dateCreatedFrom"
+            field={(
+              <Grid item xs={2} className={classes.item}>
+                <PublishedComponent
+                  pubRef="core.DatePicker"
+                  label="ticket.dateCreatedFrom"
+                  value={this._filterValue('dateCreatedFrom')}
+                  onChange={(v) => this.debouncedOnChangeFilter([
+                    {
+                      id: 'dateCreatedFrom',
+                      value: v,
+                      filter: v ? `dateCreated_Gte: "${v}"` : null,
+                    },
+                  ])}
+                />
+              </Grid>
+                      )}
+          />
+          <ControlledField
+            module={MODULE_NAME}
+            id="ticketFilter.dateCreatedTo"
+            field={(
+              <Grid item xs={2} className={classes.item}>
+                <PublishedComponent
+                  pubRef="core.DatePicker"
+                  label="ticket.dateCreatedTo"
+                  value={this._filterValue('dateCreatedTo')}
+                  onChange={(v) => this.debouncedOnChangeFilter([
+                    {
+                      id: 'dateCreatedTo',
+                      value: v,
+                      filter: v ? `dateCreated_Lte: "${v}"` : null,
+                    },
+                  ])}
+                />
+              </Grid>
+                      )}
+          />
+        </>
+        )}
         <Grid>
           <ControlledField
             module={MODULE_NAME}

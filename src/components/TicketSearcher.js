@@ -279,6 +279,7 @@ class TicketSearcher extends Component {
         filters={filters}
         onChangeFilters={onChangeFilters}
         setShowHistoryFilter={(showHistoryFilter) => this.setState({ showHistoryFilter })}
+        searchFilters={this.props.grievanceConfig?.searchFilters}
       />
     );
 

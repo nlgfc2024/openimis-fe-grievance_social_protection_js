@@ -54,6 +54,8 @@
     "addNewGrievanceTooltip": "Add Grievance",
     "ticket.ticketSummaries.delete": " ",
     "ticket.dateOfIncident":"Date of Incident",
+    "ticket.dateCreatedFrom":"Created From",
+    "ticket.dateCreatedTo":"Created To",
     "ticket.ticketDescription": "DETAILS OF EVENT LEADING TO GRIEVANCE (Provide a detailed account of the occurrence)",
     "ticket.insureeLocation":"Location",
     "ticket.title.bar":"Grievance",
