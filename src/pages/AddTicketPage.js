@@ -260,9 +260,9 @@ class AddTicketPage extends Component {
                 </Grid>
                 <Grid item xs={6} className={classes.item}>
                   <PublishedComponent
-                    pubRef="admin.UserPicker"
+                    pubRef="grievanceSocialProtection.AttendingStaffPicker"
+                    category={stateEdited.category}
                     value={stateEdited.attendingStaff}
-                    module="core"
                     onChange={(v) => this.updateAttribute('attendingStaff', v)}
                     readOnly={isSaved}
                   />

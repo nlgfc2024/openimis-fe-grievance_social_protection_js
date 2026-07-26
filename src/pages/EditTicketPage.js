@@ -272,9 +272,10 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Grid item xs={6} className={classes.item}>
                   <PublishedComponent
-                    pubRef="admin.UserPicker"
+                    pubRef="grievanceSocialProtection.AttendingStaffPicker"
+                    category={stateEdited.category}
+                    ticketJsonExt={stateEdited.jsonExt}
                     value={stateEdited.attendingStaff}
-                    module="core"
                     onChange={(v) => this.updateAttribute('attendingStaff', v)}
                     readOnly={propsReadOnly}
                   />
