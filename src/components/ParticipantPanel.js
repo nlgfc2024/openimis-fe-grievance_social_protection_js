@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Grid } from '@material-ui/core';
 import { TextInput } from '@openimis/fe-core';
 import { MODULE_NAME, EMPTY_STRING } from '../constants';
+import { parseJsonExt } from '../utils/utils';
 
 const styles = (theme) => ({
   item: theme.paper.item,
@@ -12,16 +13,6 @@ const styles = (theme) => ({
 // Synthetic source, resolved specially below rather than via a jsonExt path,
 // since a participant's display name is composed from several reporter fields.
 const FULL_NAME_SOURCE = 'reporter.fullName';
-
-function parseJsonExt(jsonExt) {
-  if (!jsonExt) return {};
-  if (typeof jsonExt === 'object') return jsonExt;
-  try {
-    return JSON.parse(jsonExt) || {};
-  } catch (e) {
-    return {};
-  }
-}
 
 // Individual and beneficiary reporters are shaped differently (a beneficiary
 // wraps its individual under `.individual`) — normalise to a common shape so

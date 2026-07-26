@@ -47,6 +47,7 @@ export function fetchTicketSummaries(mm, filters) {
     'reporterType', 'reporterTypeName', 'category', 'flags',
     'channel', 'resolution', 'title', 'dateOfIncident', 'dateCreated', 'version', 'isHistory',
     'reporterFirstName', 'reporterLastName', 'reporterDob',
+    'jsonExt', 'durationDays', 'slaState', 'wageAmount', 'attendingStaff{id, username}',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',

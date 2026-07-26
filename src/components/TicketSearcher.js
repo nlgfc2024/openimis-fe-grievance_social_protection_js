@@ -23,11 +23,30 @@ import {
 import EditIcon from '@material-ui/icons/Edit';
 // import AddIcon from '@material-ui/icons/Add';
 import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
-import { fetchTicketSummaries, resolveTicket } from '../actions';
-import { isEmptyObject } from '../utils/utils';
+import { fetchTicketSummaries, resolveTicket, fetchGrievanceConfiguration } from '../actions';
+import { isEmptyObject, parseJsonExt } from '../utils/utils';
 
 import TicketFilter from './TicketFilter';
 import EnquiryDialog from './EnquiryDialog';
+
+// Columns without a real backing model field (computed server-side, or
+// json_ext-backed) aren't sortable via a simple orderBy.
+const COLUMN_SORT_FIELD = {
+  code: 'code',
+  title: 'title',
+  category: 'category',
+  status: 'status',
+  priority: 'priority',
+  dueDate: 'dueDate',
+  dateCreated: 'dateCreated',
+  wageAmount: 'wageAmount',
+  reporter: 'reporter_id',
+  beneficiary: 'reporter_id',
+};
+
+// camelCase config key -> snake_case json_ext key, mirroring the backend's
+// own export column resolver (BE-19) so FE display and export stay aligned.
+const toSnakeCase = (key) => key.replace(/([A-Z])/g, '_$1').toLowerCase();
 
 const styles = (theme) => ({
   paper: {
@@ -72,6 +91,10 @@ class TicketSearcher extends Component {
     );
   }
 
+  componentDidMount() {
+    this.props.fetchGrievanceConfiguration();
+  }
+
   // eslint-disable-next-line no-unused-vars
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (prevProps.submittingMutation && !this.props.submittingMutation) {
@@ -113,93 +136,105 @@ class TicketSearcher extends Component {
     return prms;
   };
 
+  searchResultColumns = () => this.props.grievanceConfig?.searchResultColumns ?? [];
+
+  formatReporter = (ticket) => {
+    const reporter = typeof ticket.reporter === 'object'
+      ? ticket.reporter : JSON.parse(JSON.parse(ticket.reporter || '{}') || '{}');
+    if (ticket.reporterTypeName === 'individual') {
+      return (
+        <PublishedComponent
+          pubRef="individual.IndividualPicker"
+          readOnly
+          withNull
+          label="ticket.reporter"
+          required
+          value={
+            reporter !== undefined
+            && reporter !== null ? (isEmptyObject(reporter)
+                ? null : reporter) : null
+          }
+        />
+      );
+    }
+    if (ticket.reporterTypeName === 'beneficiary') {
+      return (
+        <PublishedComponent
+          pubRef="socialProtection.BeneficiaryPicker"
+          readOnly
+          withNull
+          label="ticket.reporter"
+          required
+          value={
+            {
+              individual: {
+                firstName: ticket.reporterFirstName,
+                lastName: ticket.reporterLastName,
+                dob: ticket.reporterDob,
+              },
+            }
+          }
+        />
+      );
+    }
+    if (ticket.reporterTypeName === 'user') {
+      return (
+        <PublishedComponent
+          pubRef="admin.UserPicker"
+          readOnly
+          value={
+            reporter !== undefined
+            && reporter !== null ? (isEmptyObject(reporter)
+                ? null : reporter) : null
+          }
+          module="core"
+          label="ticket.reporter"
+        />
+      );
+    }
+    if (ticket.reporterTypeName === null) {
+      return `${formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser')}`;
+    }
+    return '';
+  };
+
+  formatColumnValue = (ticket, column) => {
+    switch (column.key) {
+      case 'reporter':
+      case 'beneficiary':
+        return this.formatReporter(ticket);
+      case 'attendingStaff':
+        return ticket.attendingStaff?.username ?? '';
+      case 'duration':
+        return ticket.durationDays ?? '';
+      case 'slaState':
+        return ticket.slaState ?? '';
+      case 'location': {
+        const jsonExt = parseJsonExt(ticket.jsonExt);
+        return jsonExt.location_name ?? jsonExt.district_name ?? '';
+      }
+      default:
+        if (ticket[column.key] !== undefined) return ticket[column.key];
+        return parseJsonExt(ticket.jsonExt)[toSnakeCase(column.key)] ?? '';
+    }
+  };
+
   headers = () => [
-    'tickets.code',
-    'tickets.title',
-    'tickets.beneficary',
-    'tickets.priority',
-    'tickets.status',
-    'tickets.category',
+    ...this.searchResultColumns().map((column) => column.label),
     this.isShowHistory() ? 'tickets.version' : '',
   ];
 
   sorts = () => [
-    ['code', true],
-    ['title', true],
-    ['reporter_id', true],
-    ['priority', true],
-    ['status', true],
-    ['category', true],
+    ...this.searchResultColumns().map((column) => {
+      const field = COLUMN_SORT_FIELD[column.key];
+      return field ? [field, true] : null;
+    }),
     ['version', true],
   ];
 
   itemFormatters = () => {
     const formatters = [
-      (ticket) => ticket.code,
-      (ticket) => ticket.title,
-      (ticket) => {
-        const reporter = typeof ticket.reporter === 'object'
-          ? ticket.reporter : JSON.parse(JSON.parse(ticket.reporter || '{}') || '{}');
-        let picker = '';
-        if (ticket.reporterTypeName === 'individual') {
-          picker = (
-            <PublishedComponent
-              pubRef="individual.IndividualPicker"
-              readOnly
-              withNull
-              label="ticket.reporter"
-              required
-              value={
-                reporter !== undefined
-                && reporter !== null ? (isEmptyObject(reporter)
-                    ? null : reporter) : null
-              }
-            />
-          );
-        }
-        if (ticket.reporterTypeName === 'beneficiary') {
-          picker = (
-            <PublishedComponent
-              pubRef="socialProtection.BeneficiaryPicker"
-              readOnly
-              withNull
-              label="ticket.reporter"
-              required
-              value={
-                {
-                  individual: {
-                    firstName: ticket.reporterFirstName,
-                    lastName: ticket.reporterLastName,
-                    dob: ticket.reporterDob,
-                  },
-                }
-              }
-            />
-          );
-        }
-        if (ticket.reporterTypeName === 'user') {
-          picker = (
-            <PublishedComponent
-              pubRef="admin.UserPicker"
-              readOnly
-              value={
-                reporter !== undefined
-                && reporter !== null ? (isEmptyObject(reporter)
-                    ? null : reporter) : null
-              }
-              module="core"
-              label="ticket.reporter"
-            />
-          );
-        }
-        if (ticket.reporterTypeName === null) {
-          picker = `${formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser')}`;
-        }
-        return picker;
-      },
-      (ticket) => ticket.priority,
-      (ticket) => ticket.status,
-      (ticket) => ticket.category,
+      ...this.searchResultColumns().map((column) => (ticket) => this.formatColumnValue(ticket, column)),
       (ticket) => (this.isShowHistory() ? ticket?.version : null),
     ];
 
@@ -296,11 +331,12 @@ const mapStateToProps = (state) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
   confirmed: state.core.confirmed,
+  grievanceConfig: state.grievanceSocialProtection.grievanceConfig,
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
-    fetchTicketSummaries, resolveTicket, journalize, coreConfirm,
+    fetchTicketSummaries, resolveTicket, journalize, coreConfirm, fetchGrievanceConfiguration,
   },
   dispatch,
 );

@@ -16,3 +16,13 @@ export function isBase64Encoded(str) {
 export function isEmptyObject(obj) {
   return Object.keys(obj).length === 0;
 }
+
+export function parseJsonExt(jsonExt) {
+  if (!jsonExt) return {};
+  if (typeof jsonExt === 'object') return jsonExt;
+  try {
+    return JSON.parse(jsonExt) || {};
+  } catch (e) {
+    return {};
+  }
+}

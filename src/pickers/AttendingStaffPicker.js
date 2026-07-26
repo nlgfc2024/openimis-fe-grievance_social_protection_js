@@ -2,16 +2,7 @@ import React from 'react';
 import {
   PublishedComponent, useGraphqlQuery, decodeId,
 } from '@openimis/fe-core';
-
-function parseJsonExt(jsonExt) {
-  if (!jsonExt) return {};
-  if (typeof jsonExt === 'object') return jsonExt;
-  try {
-    return JSON.parse(jsonExt) || {};
-  } catch (e) {
-    return {};
-  }
-}
+import { parseJsonExt } from '../utils/utils';
 
 /**
  * Wraps admin.UserPicker, restricting candidates to the ticket's category's
