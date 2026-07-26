@@ -147,6 +147,7 @@ export function formatUpdateTicketGQL(ticket) {
     ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
+    ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
     ${ticket.dueDate ? `dueDate: "${formatGQLString(ticket.dueDate)}"` : ''}
     ${ticket.dateSubmitted ? `dateSubmitted: "${formatGQLString(ticket.dateSubmitted)}"` : ''}

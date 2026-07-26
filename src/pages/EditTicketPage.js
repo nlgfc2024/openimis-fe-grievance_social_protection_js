@@ -27,9 +27,10 @@ import {
 import _ from 'lodash';
 import { Save } from '@material-ui/icons';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
-import { EMPTY_STRING, MODULE_NAME } from '../constants';
+import { EMPTY_STRING, MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
 import ParticipantPanel from '../components/ParticipantPanel';
+import { parseJsonExt } from '../utils/utils';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -54,7 +55,8 @@ class EditTicketPage extends Component {
   componentDidMount() {
     if (this.props.edited_id) {
       this.setState({ grievanceConfig: this.props.grievanceConfig });
-      this.setState({ stateEdited: this.props.ticket });
+      const jsonExt = parseJsonExt(this.props.ticket.jsonExt);
+      this.setState({ stateEdited: { ...this.props.ticket, referredTo: jsonExt.referred_to || null } });
       if (this.props.ticket.reporter) {
         this.setState({ reporter: JSON.parse(JSON.parse(this.props.ticket.reporter || '{}'), '{}') });
       }
@@ -84,7 +86,8 @@ class EditTicketPage extends Component {
   doesTicketChange = () => {
     const { ticket } = this.props;
     const { stateEdited } = this.state;
-    return !_.isEqual(ticket, stateEdited);
+    const baselineReferredTo = parseJsonExt(ticket.jsonExt).referred_to || null;
+    return !_.isEqual({ ...ticket, referredTo: baselineReferredTo }, stateEdited);
   };
 
   render() {
@@ -102,6 +105,10 @@ class EditTicketPage extends Component {
     const {
       stateEdited, reporter, comments,
     } = this.state;
+
+    const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
+    const wasReferred = !!ticketJsonExt.was_referred;
+
     return (
       <div className={classes.page}>
         <Grid container>
@@ -289,6 +296,17 @@ class EditTicketPage extends Component {
                     readOnly={propsReadOnly}
                   />
                 </Grid>
+                {stateEdited.status === TICKET_STATUSES.REFERRED && (
+                  <Grid item xs={6} className={classes.item}>
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.ReferralAuthorityPicker"
+                      value={stateEdited.referredTo}
+                      onChange={(v) => this.updateAttribute('referredTo', v)}
+                      required
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12} className={classes.item}>
                   <TextInput
                     label="ticket.description"
@@ -328,6 +346,17 @@ class EditTicketPage extends Component {
                     readOnly={propsReadOnly}
                   />
                 </Grid>
+                {wasReferred && (
+                  <Grid item xs={12} className={classes.item}>
+                    <Typography color="textSecondary">
+                      <FormattedMessage
+                        module={MODULE_NAME}
+                        id="ticket.wasReferredNote"
+                        values={{ authority: ticketJsonExt.referred_to }}
+                      />
+                    </Typography>
+                  </Grid>
+                )}
                 <Grid item xs={11} className={classes.item} />
                 <Grid item xs={1} className={classes.item}>
                   <IconButton
@@ -335,7 +364,11 @@ class EditTicketPage extends Component {
                     component="label"
                     color="primary"
                     onClick={this.save}
-                    disabled={propsReadOnly || !this.doesTicketChange()}
+                    disabled={
+                      propsReadOnly
+                      || !this.doesTicketChange()
+                      || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
+                    }
                   >
                     <Save />
                   </IconButton>
