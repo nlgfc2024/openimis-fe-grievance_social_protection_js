@@ -53,7 +53,9 @@ function TicketFilter({
       {
         id: k,
         value: v,
-        filter: `${k}: "${decodeId(v?.id)}"`,
+        // Guard the cleared case: decodeId(undefined) throws (atob on "undefined"),
+        // so drop the filter (null) instead of decoding a missing id.
+        filter: v?.id ? `${k}: "${decodeId(v.id)}"` : null,
       },
     ]);
   };
