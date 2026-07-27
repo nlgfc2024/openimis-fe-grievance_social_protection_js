@@ -20,6 +20,7 @@ import {
   historyPush,
   decodeId,
   downloadExport,
+  CLEARED_STATE_FILTER,
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
 // import AddIcon from '@material-ui/icons/Add';
@@ -27,7 +28,7 @@ import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
 import {
   fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
 } from '../actions';
-import { isEmptyObject, parseJsonExt } from '../utils/utils';
+import { isEmptyObject, parseJsonExt, applyNumberCircle } from '../utils/utils';
 
 import TicketFilter from './TicketFilter';
 import EnquiryDialog from './EnquiryDialog';
@@ -91,6 +92,8 @@ class TicketSearcher extends Component {
       reset: 0,
       showHistoryFilter: false,
       displayVersion: false,
+      appliedCustomFilters: [CLEARED_STATE_FILTER],
+      appliedFiltersRowStructure: [CLEARED_STATE_FILTER],
     };
     this.rowsPerPageOptions = props.modulesManager.getConf(
       'fe-grievance_social_protection',
@@ -311,6 +314,23 @@ class TicketSearcher extends Component {
 
   rowLocked = (selection, i) => !!i.clientMutationId;
 
+  isFilterEnabled = (key) => {
+    const { searchFilters } = this.props.grievanceConfig ?? {};
+    return !searchFilters || searchFilters.includes(key);
+  };
+
+  // Advanced Criteria only exposes the fields not already covered by
+  // TicketFilter's own inputs (formNumber, location, nationalId).
+  isAdvancedCriteriaEnabled = () => (
+    this.isFilterEnabled('formNumber')
+    || this.isFilterEnabled('location')
+    || this.isFilterEnabled('nationalId')
+  );
+
+  setAppliedCustomFilters = (appliedCustomFilters) => this.setState({ appliedCustomFilters });
+
+  setAppliedFiltersRowStructure = (appliedFiltersRowStructure) => this.setState({ appliedFiltersRowStructure });
+
   render() {
     const {
       intl,
@@ -369,6 +389,14 @@ class TicketSearcher extends Component {
           exportFields={exportFields}
           exportFieldsColumns={exportFieldsColumns}
           exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
+          isCustomFiltering={this.isAdvancedCriteriaEnabled()}
+          moduleName="grievance_social_protection"
+          objectType="Ticket"
+          appliedCustomFilters={this.state.appliedCustomFilters}
+          setAppliedCustomFilters={this.setAppliedCustomFilters}
+          appliedFiltersRowStructure={this.state.appliedFiltersRowStructure}
+          setAppliedFiltersRowStructure={this.setAppliedFiltersRowStructure}
+          applyNumberCircle={applyNumberCircle}
         />
       </>
     );

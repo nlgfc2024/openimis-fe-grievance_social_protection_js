@@ -1,3 +1,4 @@
+import React from 'react';
 import _ from 'lodash';
 
 export function ticketLabel(ticket) {
@@ -25,4 +26,29 @@ export function parseJsonExt(jsonExt) {
   } catch (e) {
     return {};
   }
+}
+
+// Active-custom-filters count badge for the Searcher header's Advanced
+// Filters button, matching the fe-individual module's own styling.
+export function applyNumberCircle(number) {
+  return (
+    <div style={{
+      color: '#ffffff',
+      backgroundColor: '#006273',
+      borderRadius: '50%',
+      padding: '5px',
+      minWidth: '40px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontWeight: 'bold',
+      fontSize: '12px',
+      width: '20px',
+      height: '45px',
+      marginTop: '7px',
+    }}
+    >
+      {number}
+    </div>
+  );
 }
