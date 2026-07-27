@@ -19,11 +19,14 @@ import {
   formatMessage,
   historyPush,
   decodeId,
+  downloadExport,
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
 // import AddIcon from '@material-ui/icons/Add';
 import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
-import { fetchTicketSummaries, resolveTicket, fetchGrievanceConfiguration } from '../actions';
+import {
+  fetchTicketSummaries, resolveTicket, fetchGrievanceConfiguration, downloadTickets,
+} from '../actions';
 import { isEmptyObject, parseJsonExt } from '../utils/utils';
 
 import TicketFilter from './TicketFilter';
@@ -47,6 +50,16 @@ const COLUMN_SORT_FIELD = {
 // camelCase config key -> snake_case json_ext key, mirroring the backend's
 // own export column resolver (BE-19) so FE display and export stay aligned.
 const toSnakeCase = (key) => key.replace(/([A-Z])/g, '_$1').toLowerCase();
+
+// Columns ticketsExport (core's ExportableQueryMixin) can't produce at all:
+// duration/slaState are computed server-side, not reachable via the shared
+// mixin's plain values_list() — see grievance_social_protection/schema.py's
+// _unfold_json_ext / BE-19 notes. Silently dropped from export, not shown
+// as broken columns.
+const UNEXPORTABLE_COLUMN_KEYS = new Set(['duration', 'slaState']);
+const DIRECT_MODEL_FIELD_KEYS = new Set([
+  'code', 'title', 'status', 'priority', 'category', 'wageAmount', 'dueDate', 'dateCreated', 'description', 'channel',
+]);
 
 const styles = (theme) => ({
   paper: {
@@ -104,6 +117,12 @@ class TicketSearcher extends Component {
     } else if (!prevProps.confirmed && this.props.confirmed) {
       this.state.confirmedAction();
     }
+    if (this.props.ticketsExport && this.props.ticketsExport !== prevProps.ticketsExport) {
+      downloadExport(
+        this.props.ticketsExport,
+        `${formatMessage(this.props.intl, MODULE_NAME, 'export.filename.tickets')}.csv`,
+      )();
+    }
   }
 
   fetch = (prms) => {
@@ -137,6 +156,33 @@ class TicketSearcher extends Component {
   };
 
   searchResultColumns = () => this.props.grievanceConfig?.searchResultColumns ?? [];
+
+  exportFieldsAndColumns = () => {
+    const fields = [];
+    const fieldsColumns = {};
+    let needsJsonExt = false;
+
+    this.searchResultColumns().forEach((column) => {
+      const { key, label } = column;
+      if (UNEXPORTABLE_COLUMN_KEYS.has(key)) return;
+      if (key === 'attendingStaff') {
+        fields.push('attendingStaff.username');
+        fieldsColumns.attending_staff__username = label;
+        return;
+      }
+      if (DIRECT_MODEL_FIELD_KEYS.has(key)) {
+        fields.push(key);
+        fieldsColumns[toSnakeCase(key)] = label;
+        return;
+      }
+      needsJsonExt = true;
+      const jsonExtKey = key === 'location' ? 'location_name' : toSnakeCase(key);
+      fieldsColumns[jsonExtKey] = label;
+    });
+
+    if (needsJsonExt) fields.push('json_ext');
+    return { fields, fieldsColumns };
+  };
 
   formatReporter = (ticket) => {
     const reporter = typeof ticket.reporter === 'object'
@@ -273,6 +319,8 @@ class TicketSearcher extends Component {
     } = this.props;
 
     const count = ticketsPageInfo.totalCount;
+    const enableExport = !!this.props.grievanceConfig?.enableExport;
+    const { fields: exportFields, fieldsColumns: exportFieldsColumns } = this.exportFieldsAndColumns();
 
     const filterPane = ({ filters, onChangeFilters }) => (
       <TicketFilter
@@ -316,6 +364,11 @@ class TicketSearcher extends Component {
           rowLocked={this.rowLocked}
           onDoubleClick={(i) => !i.clientMutationId && onDoubleClick(i)}
           reset={this.state.reset}
+          exportable={enableExport}
+          exportFetch={this.props.downloadTickets}
+          exportFields={exportFields}
+          exportFieldsColumns={exportFieldsColumns}
+          exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
         />
       </>
     );
@@ -333,11 +386,17 @@ const mapStateToProps = (state) => ({
   mutation: state.grievanceSocialProtection.mutation,
   confirmed: state.core.confirmed,
   grievanceConfig: state.grievanceSocialProtection.grievanceConfig,
+  ticketsExport: state.grievanceSocialProtection.ticketsExport,
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
-    fetchTicketSummaries, resolveTicket, journalize, coreConfirm, fetchGrievanceConfiguration,
+    fetchTicketSummaries,
+    resolveTicket,
+    journalize,
+    coreConfirm,
+    fetchGrievanceConfiguration,
+    downloadTickets,
   },
   dispatch,
 );

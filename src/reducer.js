@@ -16,6 +16,7 @@ export const ACTION_TYPE = {
   RESOLVE_BY_COMMENT: 'RESOLVE_BY_COMMENT',
   REOPEN_TICKET: 'REOPEN_TICKET',
   CLEAR_TICKET: 'CLEAR_TICKET',
+  TICKET_EXPORT: 'TICKET_EXPORT',
 };
 
 function reducer(
@@ -55,6 +56,11 @@ function reducer(
     fetchedTicketComments: false,
     errorTicketComments: null,
     ticketComments: null,
+
+    fetchingTicketsExport: false,
+    fetchedTicketsExport: false,
+    errorTicketsExport: null,
+    ticketsExport: null,
   },
   action,
 ) {
@@ -265,6 +271,28 @@ function reducer(
       return dispatchMutationErr(state, action);
     case 'TICKET_CREATE_COMMENT_RESP':
       return dispatchMutationResp(state, 'createComment', action);
+    case REQUEST(ACTION_TYPE.TICKET_EXPORT):
+      return {
+        ...state,
+        fetchingTicketsExport: true,
+        fetchedTicketsExport: false,
+        ticketsExport: null,
+        errorTicketsExport: null,
+      };
+    case SUCCESS(ACTION_TYPE.TICKET_EXPORT):
+      return {
+        ...state,
+        fetchingTicketsExport: false,
+        fetchedTicketsExport: true,
+        ticketsExport: action.payload.data.ticketsExport,
+        errorTicketsExport: formatGraphQLError(action.payload),
+      };
+    case ERROR(ACTION_TYPE.TICKET_EXPORT):
+      return {
+        ...state,
+        fetchingTicketsExport: false,
+        errorTicketsExport: formatServerError(action.payload),
+      };
     default:
       return state;
   }

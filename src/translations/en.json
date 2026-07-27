@@ -59,6 +59,8 @@
     "ReferralAuthorityPicker.label":"Referred To",
     "ReferralAuthorityPicker.placeholder":"Referred To",
     "ticket.wasReferredNote":"This grievance was referred to {authority}.",
+    "export.filename.tickets":"grievances",
+    "export.button":"Export",
     "ticket.advancedCriteria.button":"Advanced Criteria",
     "ticket.advancedCriteria.title":"Advanced Search Criteria",
     "ticket.advancedCriteria.field":"Field",

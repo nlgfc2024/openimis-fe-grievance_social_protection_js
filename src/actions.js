@@ -354,6 +354,14 @@ export function fetchGrievanceConfiguration(params) {
   return graphql(payload, ACTION_TYPE.GET_GRIEVANCE_CONFIGURATION);
 }
 
+export function downloadTickets(params) {
+  const payload = `
+    {
+      ticketsExport${!!params && params.length ? `(${params.join(',')})` : ''}
+    }`;
+  return graphql(payload, ACTION_TYPE.TICKET_EXPORT);
+}
+
 export const clearTicket = () => (dispatch) => {
   dispatch({
     type: CLEAR(ACTION_TYPE.CLEAR_TICKET),
