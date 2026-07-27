@@ -39,11 +39,6 @@ function reducer(
     category: [],
     categoryPageInfo: { totalCount: 0 },
 
-    fetchingTicketAttachments: false,
-    fetchedTicketAttachments: false,
-    errorTicketAttachments: null,
-    ticketAttachments: null,
-
     fetchingGrievanceConfig: false,
     fetchedGrievanceConfig: false,
     errorGrievanceConfig: null,
@@ -171,52 +166,6 @@ function reducer(
         fetching: false,
         error: formatServerError(action.payload),
       };
-    case 'TICKET_TICKET_ATTACHMENTS_REQ':
-      return {
-        ...state,
-        fetchingTicketAttachments: true,
-        fetchedTicketAttachments: false,
-        ticketAttachments: null,
-        errorTicketAttachments: null,
-      };
-    case 'TICKET_TICKET_ATTACHMENTS_RESP':
-      return {
-        ...state,
-        fetchingTicketAttachments: false,
-        fetchedTicketAttachments: true,
-        ticketAttachments: parseData(action.payload.data.ticketAttachments),
-        errorTicketAttachments: formatGraphQLError(action.payload),
-      };
-    case 'TICKET_TICKET_ATTACHMENTS_ERR':
-      return {
-        ...state,
-        fetchingTicketAttachments: false,
-        errorTicketAttachments: formatServerError(action.payload),
-      };
-    case 'TICKET_INSUREE_TICKETS_REQ':
-      return {
-        ...state,
-        fetchingTickets: true,
-        fetchedTickets: false,
-        tickets: null,
-        policy: null,
-        errorTickets: null,
-      };
-    case 'TICKET_INSUREE_TICKETS_RESP':
-      return {
-        ...state,
-        fetchingTickets: false,
-        fetchedTickets: true,
-        tickets: parseData(action.payload.data.ticketsByInsuree),
-        ticketsPageInfo: pageInfo(action.payload.data.ticketsByInsuree),
-        errorTickets: formatGraphQLError(action.payload),
-      };
-    case 'TICKET_INSUREE_TICKETS_ERR':
-      return {
-        ...state,
-        fetchingTickets: false,
-        errorTickets: formatServerError(action.payload),
-      };
     case REQUEST(ACTION_TYPE.GET_GRIEVANCE_CONFIGURATION):
       return {
         ...state,
@@ -257,14 +206,6 @@ function reducer(
       return dispatchMutationResp(state, 'createTicket', action);
     case 'TICKET_UPDATE_TICKET_RESP':
       return dispatchMutationResp(state, 'updateTicket', action);
-    case 'TICKET_DELETE_TICKET_RESP':
-      return dispatchMutationResp(state, 'deleteTicket', action);
-    case 'TICKET_ATTACHMENT_MUTATION_REQ':
-      return dispatchMutationReq(state, action);
-    case 'TICKET_ATTACHMENT_MUTATION_ERR':
-      return dispatchMutationErr(state, action);
-    case 'TICKET_CREATE_TICKET_ATTACHMENT_RESP':
-      return dispatchMutationResp(state, 'createTicketAttachment', action);
     case 'TICKET_COMMENT_MUTATION_REQ':
       return dispatchMutationReq(state, action);
     case 'TICKET_COMMENT_MUTATION_ERR':

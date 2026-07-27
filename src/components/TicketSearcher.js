@@ -25,7 +25,7 @@ import EditIcon from '@material-ui/icons/Edit';
 // import AddIcon from '@material-ui/icons/Add';
 import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
 import {
-  fetchTicketSummaries, resolveTicket, fetchGrievanceConfiguration, downloadTickets,
+  fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
 } from '../actions';
 import { isEmptyObject, parseJsonExt } from '../utils/utils';
 
@@ -392,7 +392,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
     fetchTicketSummaries,
-    resolveTicket,
     journalize,
     coreConfirm,
     fetchGrievanceConfiguration,
