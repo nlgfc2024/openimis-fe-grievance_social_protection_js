@@ -16,6 +16,7 @@ const GRIEVANCE_CONFIGURATION_PROJECTION = () => [
   'grievanceChannels',
   'grievanceDefaultResolutionsByCategory{category, resolutionTime}',
   'grievanceCategoryStaffRoles{category, roleIds, strategy, scope}',
+  'grievanceCategoryWorkflows{category, makerChecker, requiresAmount, onApprovedSignal, onResolveTask}',
   'ticketStatuses{code, label, initial, terminal, requiresReferralEntity}',
   'referralEntities',
   'participantFields{key, label, source}',
@@ -63,7 +64,7 @@ export function fetchTicket(mm, filters) {
     'reporterType', 'reporterTypeName', 'category', 'flags', 'channel',
     'resolution', 'title', 'dateOfIncident', 'dateCreated',
     'attendingStaff {id, username}', 'version', 'isHistory,', 'jsonExt',
-    'reporterFirstName', 'reporterLastName', 'reporterDob',
+    'reporterFirstName', 'reporterLastName', 'reporterDob', 'wageAmount',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',
@@ -147,6 +148,7 @@ export function formatUpdateTicketGQL(ticket) {
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
     ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
     ${ticket.dueDate ? `dueDate: "${formatGQLString(ticket.dueDate)}"` : ''}
     ${ticket.dateSubmitted ? `dateSubmitted: "${formatGQLString(ticket.dateSubmitted)}"` : ''}

@@ -21,6 +21,7 @@ import {
 import {
   journalize,
   TextInput,
+  NumberInput,
   PublishedComponent,
   FormattedMessage,
 } from '@openimis/fe-core';
@@ -30,6 +31,7 @@ import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
 import ParticipantPanel from '../components/ParticipantPanel';
+import PartialWagesTaskStatus from '../components/PartialWagesTaskStatus';
 import { parseJsonExt } from '../utils/utils';
 
 const styles = (theme) => ({
@@ -108,6 +110,15 @@ class EditTicketPage extends Component {
 
     const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
     const wasReferred = !!ticketJsonExt.was_referred;
+
+    const categoryWorkflow = (grievanceConfig?.grievanceCategoryWorkflows || [])
+      .find((workflow) => workflow.category === stateEdited.category);
+    const isMakerChecker = !!categoryWorkflow?.makerChecker;
+    const requiresWageAmount = !!categoryWorkflow?.requiresAmount;
+    const isTerminalStatus = !!(grievanceConfig?.ticketStatuses || [])
+      .find((status) => status.code === stateEdited.status)?.terminal;
+    const hasWageAmount = stateEdited.wageAmount !== null
+      && stateEdited.wageAmount !== undefined && stateEdited.wageAmount !== '';
 
     return (
       <div className={classes.page}>
@@ -357,6 +368,24 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                 )}
+                {requiresWageAmount && (
+                  <Grid item xs={4} className={classes.item}>
+                    <NumberInput
+                      module={MODULE_NAME}
+                      label="ticket.wageAmount"
+                      value={stateEdited.wageAmount}
+                      onChange={(v) => this.updateAttribute('wageAmount', v)}
+                      min={0}
+                      required={isTerminalStatus}
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
+                {isMakerChecker && (
+                  <Grid item xs={12} className={classes.item}>
+                    <PartialWagesTaskStatus ticketId={stateEdited.id} />
+                  </Grid>
+                )}
                 <Grid item xs={11} className={classes.item} />
                 <Grid item xs={1} className={classes.item}>
                   <IconButton
@@ -368,6 +397,7 @@ class EditTicketPage extends Component {
                       propsReadOnly
                       || !this.doesTicketChange()
                       || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
+                      || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
                     }
                   >
                     <Save />

@@ -18,6 +18,9 @@ export const RIGHT_TICKET_DELETE = 127003;
 export const MODULE_NAME = 'grievanceSocialProtection';
 export const FETCH_INDIVIDUAL_REF = 'individual.actions.fetchIndividuals';
 
+export const PARTIAL_WAGES_TASK_BUSINESS_EVENT = 'grievance_social_protection.partial_wages_approval';
+export const TASKS_MANAGEMENT_TASK_ROUTE_REF = 'tasksManagement.route.task';
+
 export const EMPTY_STRING = '';
 export const GRIEVANT_TYPE_LIST = ['individual', 'beneficiary', 'user'];
 export const GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY = 'grievance.MainMenu';
