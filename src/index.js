@@ -16,6 +16,8 @@ import CategoryPicker from './pickers/CategoryPicker';
 import GrievanceConfigurationDialog from './dialogs/GrievanceConfigurationDialog';
 import ChannelPicker from './pickers/ChannelPicker';
 import FlagPicker from './pickers/FlagsPicker';
+import AttendingStaffPicker from './pickers/AttendingStaffPicker';
+import ReferralAuthorityPicker from './pickers/ReferralAuthorityPicker';
 import {
   MODULE_NAME,
   RIGHT_TICKET_ADD,
@@ -42,6 +44,8 @@ const DEFAULT_CONFIG = {
     { key: 'grievanceSocialProtection.CategoryPicker', ref: CategoryPicker },
     { key: 'grievanceSocialProtection.FlagPicker', ref: FlagPicker },
     { key: 'grievanceSocialProtection.ChannelPicker', ref: ChannelPicker },
+    { key: 'grievanceSocialProtection.AttendingStaffPicker', ref: AttendingStaffPicker },
+    { key: 'grievanceSocialProtection.ReferralAuthorityPicker', ref: ReferralAuthorityPicker },
     { key: 'grievanceSocialProtection.GrievanceConfigurationDialog', ref: GrievanceConfigurationDialog },
 
   ],

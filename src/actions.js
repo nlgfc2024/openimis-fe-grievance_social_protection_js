@@ -1,8 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
 import {
-  graphql, formatMutation, formatPageQueryWithCount, formatGQLString, formatPageQuery,
-  baseApiUrl, decodeId, openBlob, formatQuery,
+  graphql, formatMutation, formatPageQueryWithCount, formatGQLString, decodeId, formatQuery,
 } from '@openimis/fe-core';
 import { ACTION_TYPE } from './reducer';
 import { FETCH_INDIVIDUAL_REF } from './constants';
@@ -16,6 +15,15 @@ const GRIEVANCE_CONFIGURATION_PROJECTION = () => [
   'grievanceFlags',
   'grievanceChannels',
   'grievanceDefaultResolutionsByCategory{category, resolutionTime}',
+  'grievanceCategoryStaffRoles{category, roleIds, strategy, scope}',
+  'grievanceCategoryWorkflows{category, makerChecker, requiresAmount, onApprovedSignal, onResolveTask}',
+  'ticketStatuses{code, label, initial, terminal, requiresReferralEntity}',
+  'referralEntities',
+  'participantFields{key, label, source}',
+  'searchFilters',
+  'searchResultColumns{key, label}',
+  'sla',
+  'enableExport',
 ];
 
 const CATEGORY_FULL_PROJECTION = () => [
@@ -39,6 +47,7 @@ export function fetchTicketSummaries(mm, filters) {
     'reporterType', 'reporterTypeName', 'category', 'flags',
     'channel', 'resolution', 'title', 'dateOfIncident', 'dateCreated', 'version', 'isHistory',
     'reporterFirstName', 'reporterLastName', 'reporterDob',
+    'jsonExt', 'durationDays', 'slaState', 'wageAmount', 'attendingStaff{id, username}',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',
@@ -55,7 +64,7 @@ export function fetchTicket(mm, filters) {
     'reporterType', 'reporterTypeName', 'category', 'flags', 'channel',
     'resolution', 'title', 'dateOfIncident', 'dateCreated',
     'attendingStaff {id, username}', 'version', 'isHistory,', 'jsonExt',
-    'reporterFirstName', 'reporterLastName', 'reporterDob',
+    'reporterFirstName', 'reporterLastName', 'reporterDob', 'wageAmount',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',
@@ -138,21 +147,14 @@ export function formatUpdateTicketGQL(ticket) {
     ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
+    ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
     ${ticket.dueDate ? `dueDate: "${formatGQLString(ticket.dueDate)}"` : ''}
     ${ticket.dateSubmitted ? `dateSubmitted: "${formatGQLString(ticket.dateSubmitted)}"` : ''}
     ${ticket.dateOfIncident ? `dateOfIncident: "${formatGQLString(ticket.dateOfIncident)}"` : ''}
     ${!!ticket.channel && !!ticket.channel ? `channel: "${ticket.channel}"` : ''}
     ${!!ticket.flags && !!ticket.flags ? `flags: "${ticket.flags}"` : ''}
-  `;
-}
-
-export function resolveTicketGQL(ticket) {
-  return `
-    ${ticket.uuid !== undefined && ticket.uuid !== null ? `uuid: "${ticket.uuid}"` : ''}
-    ${ticket.ticketStatus ? 'ticketStatus: "Close"' : ''}
-    ${!!ticket.insuree && !!ticket.insuree.id ? `insureeUuid: "${ticket.insuree.uuid}"` : ''}
-    ${!!ticket.category && !!ticket.category.id ? `categoryUuid: "${ticket.category.uuid}"` : ''}
   `;
 }
 
@@ -184,50 +186,6 @@ export function updateTicket(ticket, clientMutationLabel) {
   });
 }
 
-export function resolveTicket(ticket, clientMutationLabel) {
-  const mutation = formatMutation('updateTicket', resolveTicketGQL(ticket), clientMutationLabel);
-  const requestedDateTime = new Date();
-  return graphql(mutation.payload, ['TICKET_MUTATION_REQ', 'TICKET_UPDATE_TICKET_RESP', 'TICKET_MUTATION_ERR'], {
-    clientMutationId: mutation.clientMutationId,
-    clientMutationLabel,
-    requestedDateTime,
-    ticketUuid: ticket.uuid,
-  });
-}
-
-export function fetchTicketAttachments(ticket) {
-  if (ticket && ticket.uuid) {
-    const payload = formatPageQuery(
-      'ticketAttachments',
-      [`ticket_Uuid: "${ticket.uuid}"`],
-      ['id', 'uuid', 'date', 'filename', 'mimeType',
-        'ticket{id, uuid, ticketCode}'],
-    );
-    return graphql(payload, 'TICKET_TICKET_ATTACHMENTS');
-  }
-  return { type: 'TICKET_TICKET_ATTACHMENTS', payload: { data: [] } };
-}
-
-export function downloadAttachment(attach) {
-  const url = new URL(`${window.location.origin}${baseApiUrl}/ticket/attach`);
-  url.search = new URLSearchParams({ id: decodeId(attach.id) });
-  return () => fetch(url)
-    .then((response) => response.blob())
-    .then((blob) => openBlob(blob, attach.filename, attach.mime));
-}
-
-export function formatTicketAttachmentGQL(ticketattachment) {
-  return `
-    ${ticketattachment.uuid !== undefined && ticketattachment.uuid !== null ? `uuid: "${ticketattachment.uuid}"` : ''}
-    ${!!ticketattachment.ticket && !!ticketattachment.ticket.id ? `ticketUuid: "${ticketattachment.ticket.uuid}"` : ''}
-    ${ticketattachment.filename ? `filename: "${formatGQLString(ticketattachment.filename)}"` : ''}
-    ${ticketattachment.mimeType ? `mimeType: "${formatGQLString(ticketattachment.mimeType)}"` : ''}
-    ${ticketattachment.url ? `url: "${formatGQLString(ticketattachment.url)}"` : ''}
-    ${ticketattachment.date ? `date: "${formatGQLString(ticketattachment.date)}"` : ''}
-    ${ticketattachment.document ? `document: "${formatGQLString(ticketattachment.document)}"` : ''}
-  `;
-}
-
 export function formatTicketCommentGQL(ticketComment, ticket, commenterType) {
   return `
     ${ticketComment.uuid !== undefined && ticketComment.uuid !== null ? `uuid: "${ticketComment.uuid}"` : ''}
@@ -236,25 +194,6 @@ export function formatTicketCommentGQL(ticketComment, ticket, commenterType) {
     ${commenterType ? `commenterType: "${commenterType}"` : ''}
     ${ticketComment.comment ? `comment: "${formatGQLString(ticketComment.comment)}"` : ''}
   `;
-}
-
-export function createTicketAttachment(ticketattachment, clientMutationLabel) {
-  const mutation = formatMutation(
-    'createTicketAttachment',
-    formatTicketAttachmentGQL(ticketattachment),
-    clientMutationLabel,
-  );
-  const requestedDateTime = new Date();
-  return graphql(
-    mutation.payload,
-    ['TICKET_ATTACHMENT_MUTATION_REQ', 'TICKET_CREATE_TICKET_ATTACHMENT_RESP', 'TICKET_ATTACHMENT_MUTATION_ERR'],
-    {
-      clientMutationId: mutation.clientMutationId,
-      clientMutationLabel,
-      requestedDateTime,
-
-    },
-  );
 }
 
 export function createTicketComment(ticketComment, ticket, commenterType, clientMutationLabel) {
@@ -319,29 +258,17 @@ export function fetchIndividual(mm, id) {
   return fetchIndividualCallable([`id: ${id}`]);
 }
 
-export function fetchInsureeTicket(mm, chfId) {
-  const filters = [
-    `chfId: "${chfId}"`,
-  ];
-  const projections = [
-    'id', 'uuid', 'ticketTitle', 'ticketCode', 'ticketDescription',
-    'name', 'phone', 'email', 'dateOfIncident', 'nameOfComplainant', 'witness',
-    'resolution', 'ticketStatus', 'ticketPriority', 'dateSubmitted', 'dateSubmitted',
-    'category{id, uuid, categoryTitle, slug}',
-    'insuree{id, uuid, otherNames, lastName, dob, chfId, phone, email}',
-    'attachment{edges{node{id, uuid, filename, mimeType, url, document, date}}}',
-  ];
-  const payload = formatPageQueryWithCount(
-    `ticketsByInsuree(chfId: "${chfId}", orderBy: "ticketCode", ticketCode: false, first: 5)`,
-    filters,
-    projections,
-  );
-  return graphql(payload, 'TICKET_TICKET');
-}
-
 export function fetchGrievanceConfiguration(params) {
   const payload = formatQuery('grievanceConfig', params, GRIEVANCE_CONFIGURATION_PROJECTION());
   return graphql(payload, ACTION_TYPE.GET_GRIEVANCE_CONFIGURATION);
+}
+
+export function downloadTickets(params) {
+  const payload = `
+    {
+      ticketsExport${!!params && params.length ? `(${params.join(',')})` : ''}
+    }`;
+  return graphql(payload, ACTION_TYPE.TICKET_EXPORT);
 }
 
 export const clearTicket = () => (dispatch) => {

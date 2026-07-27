@@ -21,14 +21,18 @@ import {
 import {
   journalize,
   TextInput,
+  NumberInput,
   PublishedComponent,
   FormattedMessage,
 } from '@openimis/fe-core';
 import _ from 'lodash';
 import { Save } from '@material-ui/icons';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
-import { EMPTY_STRING, MODULE_NAME } from '../constants';
+import { EMPTY_STRING, MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
+import ParticipantPanel from '../components/ParticipantPanel';
+import PartialWagesTaskStatus from '../components/PartialWagesTaskStatus';
+import { parseJsonExt } from '../utils/utils';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -53,7 +57,8 @@ class EditTicketPage extends Component {
   componentDidMount() {
     if (this.props.edited_id) {
       this.setState({ grievanceConfig: this.props.grievanceConfig });
-      this.setState({ stateEdited: this.props.ticket });
+      const jsonExt = parseJsonExt(this.props.ticket.jsonExt);
+      this.setState({ stateEdited: { ...this.props.ticket, referredTo: jsonExt.referred_to || null } });
       if (this.props.ticket.reporter) {
         this.setState({ reporter: JSON.parse(JSON.parse(this.props.ticket.reporter || '{}'), '{}') });
       }
@@ -80,20 +85,11 @@ class EditTicketPage extends Component {
     }));
   };
 
-  extractFieldFromJsonExt = (reporter, field) => {
-    if (reporter) {
-      if (reporter.jsonExt) {
-        return reporter.jsonExt[field] || '';
-      }
-      return '';
-    }
-    return '';
-  };
-
   doesTicketChange = () => {
     const { ticket } = this.props;
     const { stateEdited } = this.state;
-    return !_.isEqual(ticket, stateEdited);
+    const baselineReferredTo = parseJsonExt(ticket.jsonExt).referred_to || null;
+    return !_.isEqual({ ...ticket, referredTo: baselineReferredTo }, stateEdited);
   };
 
   render() {
@@ -111,6 +107,19 @@ class EditTicketPage extends Component {
     const {
       stateEdited, reporter, comments,
     } = this.state;
+
+    const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
+    const wasReferred = !!ticketJsonExt.was_referred;
+
+    const categoryWorkflow = (grievanceConfig?.grievanceCategoryWorkflows || [])
+      .find((workflow) => workflow.category === stateEdited.category);
+    const isMakerChecker = !!categoryWorkflow?.makerChecker;
+    const requiresWageAmount = !!categoryWorkflow?.requiresAmount;
+    const isTerminalStatus = !!(grievanceConfig?.ticketStatuses || [])
+      .find((status) => status.code === stateEdited.status)?.terminal;
+    const hasWageAmount = stateEdited.wageAmount !== null
+      && stateEdited.wageAmount !== undefined && stateEdited.wageAmount !== '';
+
     return (
       <div className={classes.page}>
         <Grid container>
@@ -140,63 +149,41 @@ class EditTicketPage extends Component {
               <Divider />
               <Grid container className={classes.item}>
                 {stateEdited.reporterTypeName === 'individual' && (
-                <>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.name"
-                      value={reporter && reporter.individual
-                        ? `${reporter.individual.firstName} ${reporter.individual.lastName} ${reporter.individual.dob}`
-                        : reporter
-                          ? `${reporter.firstName} ${reporter.lastName} ${reporter.dob}`
-                          : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('name', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.phone"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(reporter, 'phone')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('phone', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={4} className={classes.item}>
-                    <TextInput
-                      module={MODULE_NAME}
-                      label="ticket.email"
-                      value={!!stateEdited && !!stateEdited.reporter
-                        ? this.extractFieldFromJsonExt(reporter, 'email')
-                        : EMPTY_STRING}
-                      onChange={(v) => this.updateAttribute('email', v)}
-                      required={false}
-                      readOnly
-                    />
-                  </Grid>
-                </>
+                  <ParticipantPanel
+                    participantFields={this.props.grievanceConfig?.participantFields}
+                    reporter={reporter}
+                    ticketJsonExt={stateEdited.jsonExt}
+                  />
                 )}
                 {stateEdited.reporterTypeName === 'beneficiary' && (
-                <PublishedComponent
-                  pubRef="socialProtection.BeneficiaryPicker"
-                  onChange={(v) => this.updateAttribute('reporter', v)}
-                  readOnly
-                  value={
-                    {
+                <>
+                  <PublishedComponent
+                    pubRef="socialProtection.BeneficiaryPicker"
+                    onChange={(v) => this.updateAttribute('reporter', v)}
+                    readOnly
+                    value={
+                      {
+                        individual: {
+                          firstName: stateEdited.reporterFirstName,
+                          lastName: stateEdited.reporterLastName,
+                          dob: stateEdited.reporterDob,
+                        },
+                      }
+                    }
+                    module={MODULE_NAME}
+                  />
+                  <ParticipantPanel
+                    participantFields={this.props.grievanceConfig?.participantFields}
+                    reporter={{
                       individual: {
                         firstName: stateEdited.reporterFirstName,
                         lastName: stateEdited.reporterLastName,
                         dob: stateEdited.reporterDob,
                       },
-                    }
-                  }
-                  module={MODULE_NAME}
-                />
+                    }}
+                    ticketJsonExt={stateEdited.jsonExt}
+                  />
+                </>
                 )}
                 {stateEdited.reporterTypeName === 'user' && (
                 <Grid item xs={6} className={classes.item}>
@@ -303,9 +290,10 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Grid item xs={6} className={classes.item}>
                   <PublishedComponent
-                    pubRef="admin.UserPicker"
+                    pubRef="grievanceSocialProtection.AttendingStaffPicker"
+                    category={stateEdited.category}
+                    ticketJsonExt={stateEdited.jsonExt}
                     value={stateEdited.attendingStaff}
-                    module="core"
                     onChange={(v) => this.updateAttribute('attendingStaff', v)}
                     readOnly={propsReadOnly}
                   />
@@ -319,6 +307,17 @@ class EditTicketPage extends Component {
                     readOnly={propsReadOnly}
                   />
                 </Grid>
+                {stateEdited.status === TICKET_STATUSES.REFERRED && (
+                  <Grid item xs={6} className={classes.item}>
+                    <PublishedComponent
+                      pubRef="grievanceSocialProtection.ReferralAuthorityPicker"
+                      value={stateEdited.referredTo}
+                      onChange={(v) => this.updateAttribute('referredTo', v)}
+                      required
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12} className={classes.item}>
                   <TextInput
                     label="ticket.description"
@@ -358,6 +357,35 @@ class EditTicketPage extends Component {
                     readOnly={propsReadOnly}
                   />
                 </Grid>
+                {wasReferred && (
+                  <Grid item xs={12} className={classes.item}>
+                    <Typography color="textSecondary">
+                      <FormattedMessage
+                        module={MODULE_NAME}
+                        id="ticket.wasReferredNote"
+                        values={{ authority: ticketJsonExt.referred_to }}
+                      />
+                    </Typography>
+                  </Grid>
+                )}
+                {requiresWageAmount && (
+                  <Grid item xs={4} className={classes.item}>
+                    <NumberInput
+                      module={MODULE_NAME}
+                      label="ticket.wageAmount"
+                      value={stateEdited.wageAmount}
+                      onChange={(v) => this.updateAttribute('wageAmount', v)}
+                      min={0}
+                      required={isTerminalStatus}
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
+                {isMakerChecker && (
+                  <Grid item xs={12} className={classes.item}>
+                    <PartialWagesTaskStatus ticketId={stateEdited.id} />
+                  </Grid>
+                )}
                 <Grid item xs={11} className={classes.item} />
                 <Grid item xs={1} className={classes.item}>
                   <IconButton
@@ -365,7 +393,12 @@ class EditTicketPage extends Component {
                     component="label"
                     color="primary"
                     onClick={this.save}
-                    disabled={propsReadOnly || !this.doesTicketChange()}
+                    disabled={
+                      propsReadOnly
+                      || !this.doesTicketChange()
+                      || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
+                      || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
+                    }
                   >
                     <Save />
                   </IconButton>
