@@ -144,8 +144,6 @@
     "grievantType.individual": "Individual",
     "grievantType.beneficiary": "Beneficiary",
     "menu.grievance.add": "Add Grievance",
-    "grievanceSocialProtection.dialogs.GrievanceConfigurationDialog.dialogHeader": "Please fill the config.",
-    "grievanceSocialProtection.dialogs.GrievanceConfigurationDialog.dialogBody": "Go to django admin panel and set up missing values: {configString}",
     "reopenTicket.mutation.label": "Reopen Ticket",
     "resolveGrievanceByComment.mutation.label": "Resolve Ticket using comment",
     "showHistory": "Show History",
