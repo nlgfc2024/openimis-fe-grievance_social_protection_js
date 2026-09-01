@@ -159,6 +159,13 @@ function formatUnregisteredReporterGQL(ticket) {
   ].filter(Boolean).join('\n    ');
 }
 
+// The backend `wageAmount` field is a GraphQL `Decimal` scalar, which only accepts a quoted string
+const formatWageAmountGQL = (wageAmount) => {
+  const value = Number(wageAmount);
+  if (Number.isNaN(value)) return '';
+  return `wageAmount: "${value.toFixed(2)}"`;
+};
+
 export function formatTicketGQL(ticket) {
   return `
     ${ticket.id !== undefined && ticket.id !== null ? `id: "${ticket.id}"` : ''}
@@ -182,7 +189,7 @@ export function formatTicketGQL(ticket) {
     ${ticket.dateOfIncident ? `dateOfIncident: "${formatGQLString(ticket.dateOfIncident)}"` : ''}
     ${!!ticket.channel && !!ticket.channel ? `channel: "${ticket.channel}"` : ''}
     ${!!ticket.flags && !!ticket.flags ? `flags: "${ticket.flags}"` : ''}
-    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? formatWageAmountGQL(ticket.wageAmount) : ''}
   `;
 }
 
@@ -205,7 +212,7 @@ export function formatUpdateTicketGQL(ticket) {
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
     ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}
-    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? formatWageAmountGQL(ticket.wageAmount) : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
     ${ticket.dueDate ? `dueDate: "${formatGQLString(ticket.dueDate)}"` : ''}
     ${ticket.dateSubmitted ? `dateSubmitted: "${formatGQLString(ticket.dateSubmitted)}"` : ''}
