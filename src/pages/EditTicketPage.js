@@ -5,6 +5,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 import React, { Component, useRef } from 'react';
+import { injectIntl } from 'react-intl';
 import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
 import PrintIcon from '@material-ui/icons/Print';
 import { withTheme, withStyles } from '@material-ui/core/styles';
@@ -20,6 +21,8 @@ import {
 } from '@material-ui/core';
 import {
   journalize,
+  coreAlert,
+  formatMessage,
   TextInput,
   NumberInput,
   PublishedComponent,
@@ -69,6 +72,19 @@ class EditTicketPage extends Component {
   componentDidUpdate(prevPops, prevState, snapshort) {
     if (prevPops.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
+      const { intl, mutationError } = this.props;
+      if (mutationError) {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.error.title'),
+          mutationError.detail || mutationError.message
+            || formatMessage(intl, MODULE_NAME, 'ticket.mutation.update.error'),
+        );
+      } else {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.update.success'),
+        );
+      }
     }
   }
 
@@ -415,6 +431,7 @@ class EditTicketPage extends Component {
 const mapStateToProps = (state, props) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
+  mutationError: state.grievanceSocialProtection.mutationError,
   fetchingTicket: state.grievanceSocialProtection.fetchingTicket,
   errorTicket: state.grievanceSocialProtection.errorTicket,
   fetchedTicket: state.grievanceSocialProtection.fetchedTicket,
@@ -425,13 +442,15 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
-    fetchTicket, updateTicket, createTicketComment, journalize,
+    fetchTicket, updateTicket, createTicketComment, journalize, coreAlert,
   },
   dispatch,
 );
 
-export default withTheme(
-  withStyles(styles)(
-    connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+export default injectIntl(
+  withTheme(
+    withStyles(styles)(
+      connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+    ),
   ),
 );
