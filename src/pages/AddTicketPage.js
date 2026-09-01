@@ -11,7 +11,7 @@ import {
   Grid, Paper, Typography, Divider, Button,
   RadioGroup, FormControlLabel, Radio,
 } from '@material-ui/core';
-import { Save } from '@material-ui/icons';
+import { Save, Cancel } from '@material-ui/icons';
 import {
   TextInput, journalize, coreAlert, PublishedComponent, FormattedMessage, formatMessage, decodeId,
   withHistory, withModulesManager, historyPush,
@@ -121,6 +121,10 @@ class AddTicketPage extends Component {
       `Created Ticket ${ticket.title}`,
     );
     this.setState({ isSaved: true });
+  };
+
+  cancel = () => {
+    historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
   };
 
   updateAttribute = (k, v) => {
@@ -235,16 +239,16 @@ class AddTicketPage extends Component {
                           control={<Radio color="primary" />}
                           disabled={isSaved}
                           label={formatMessage(intl, MODULE_NAME, 'ticket.individualEntryMode.manual')}
-                      />
+                        />
                       </RadioGroup>
                     </Grid>
                     {individualEntryMode === 'existing' && (
-                    <Grid item xs={3} className={classes.item}>
-                      <PublishedComponent
-                        pubRef="individual.IndividualPicker"
-                        value={stateEdited.reporter}
-                        label="Complainant"
-                        onChange={(v) => this.updateAttribute('reporter', v)}
+                      <Grid item xs={3} className={classes.item}>
+                        <PublishedComponent
+                          pubRef="individual.IndividualPicker"
+                          value={stateEdited.reporter}
+                          label="Complainant"
+                          onChange={(v) => this.updateAttribute('reporter', v)}
                           readOnly={isSaved}
                         />
                       </Grid>
@@ -296,9 +300,9 @@ class AddTicketPage extends Component {
                             label="ticket.manualIndividual.nationalId"
                             value={manualIndividual.nationalId || EMPTY_STRING}
                             onChange={(v) => this.updateManualIndividual('nationalId', v)}
-                        readOnly={isSaved}
-                      />
-                    </Grid>
+                            readOnly={isSaved}
+                          />
+                        </Grid>
                         <Grid item xs={12} className={classes.item}>
                           <Typography variant="caption" color="textSecondary">
                             <FormattedMessage
@@ -465,28 +469,31 @@ class AddTicketPage extends Component {
                     readOnly={isSaved}
                   />
                 </Grid>
-                <Grid item xs={11} className={classes.item} />
-                <Grid item xs={1} className={classes.item}>
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    color="primary"
-                    onClick={this.save}
-                    disabled={
-                      (!stateEdited.channel || !stateEdited.title || isSaved)
-                      || ((
-                        stateEdited.reporterType === 'individual'
-                        || stateEdited.reporterType === 'beneficiary'
-                        || stateEdited.reporterType === 'user')
-                        && stateEdited.reporter === null
-                      )
-                    }
-                  >
-                    <Save />
-                  </IconButton>
-                </Grid>
               </Grid>
             </Paper>
+          </Grid>
+        </Grid>
+
+        <Grid container justify="flex-end" spacing={1} className={classes.item}>
+          <Grid item>
+            <Button
+              variant="outlined"
+              startIcon={<Cancel />}
+              onClick={this.cancel}
+            >
+              <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Save />}
+              onClick={this.save}
+              disabled={!this.canSave()}
+            >
+              <FormattedMessage module={MODULE_NAME} id="ticket.saveButton" />
+            </Button>
           </Grid>
         </Grid>
       </div>
@@ -498,9 +505,16 @@ class AddTicketPage extends Component {
 const mapStateToProps = (state, props) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
+  mutationError: state.grievanceSocialProtection.mutationError,
   grievanceConfig: state.grievanceSocialProtection.grievanceConfig,
 });
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, journalize }, dispatch);
+const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, journalize, coreAlert }, dispatch);
 
-export default withTheme(withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(AddTicketPage)));
+export default withHistory(
+  withModulesManager(
+    injectIntl(
+      withTheme(withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(AddTicketPage))),
+    ),
+  ),
+);
