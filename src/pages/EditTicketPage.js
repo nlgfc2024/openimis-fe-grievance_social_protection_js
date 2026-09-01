@@ -263,15 +263,6 @@ class EditTicketPage extends Component {
                 </Grid>
                 <Grid item xs={6} className={classes.item}>
                   <PublishedComponent
-                    pubRef="grievanceSocialProtection.FlagPicker"
-                    value={stateEdited.flags}
-                    onChange={(v) => this.updateAttribute('flags', v)}
-                    required={false}
-                    readOnly={propsReadOnly}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
                     pubRef="grievanceSocialProtection.ChannelPicker"
                     value={stateEdited.channel}
                     onChange={(v) => this.updateAttribute('channel', v)}
