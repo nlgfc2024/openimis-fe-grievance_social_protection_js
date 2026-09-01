@@ -23,6 +23,9 @@ import {
   journalize,
   coreAlert,
   formatMessage,
+  historyPush,
+  withHistory,
+  withModulesManager,
   TextInput,
   NumberInput,
   PublishedComponent,
@@ -84,7 +87,13 @@ class EditTicketPage extends Component {
           formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
           formatMessage(intl, MODULE_NAME, 'ticket.mutation.update.success'),
         );
+        // Return to the grievances list once the user dismisses the success alert.
+        this.redirectAfterAlert = true;
       }
+    }
+    if (this.redirectAfterAlert && prevPops.alert && !this.props.alert) {
+      this.redirectAfterAlert = false;
+      historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
     }
   }
 
@@ -487,6 +496,7 @@ const mapStateToProps = (state, props) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
   mutationError: state.grievanceSocialProtection.mutationError,
+  alert: state.core?.alert,
   fetchingTicket: state.grievanceSocialProtection.fetchingTicket,
   errorTicket: state.grievanceSocialProtection.errorTicket,
   fetchedTicket: state.grievanceSocialProtection.fetchedTicket,
@@ -502,10 +512,14 @@ const mapDispatchToProps = (dispatch) => bindActionCreators(
   dispatch,
 );
 
-export default injectIntl(
-  withTheme(
-    withStyles(styles)(
-      connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+export default withHistory(
+  withModulesManager(
+    injectIntl(
+      withTheme(
+        withStyles(styles)(
+          connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+        ),
+      ),
     ),
   ),
 );
