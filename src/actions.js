@@ -35,6 +35,38 @@ const CATEGORY_FULL_PROJECTION = () => [
   'validityTo',
 ];
 
+export const PROJECT_HOUSEHOLDS_QUERY = `
+  query GrievanceProjectHouseholds($projectId: String, $first: Int) {
+    projectEligibleGroupBeneficiaries(
+      enrolledInProject: $projectId, isDeleted: false, first: $first
+    ) {
+      edges {
+        node {
+          id
+          jsonExt
+          group { id code head { firstName lastName dob } }
+        }
+      }
+    }
+  }
+`;
+
+export const HOUSEHOLD_MEMBERS_QUERY = `
+  query GrievanceHouseholdMembers($groupId: String, $first: Int) {
+    individual(groupId: $groupId, isDeleted: false, first: $first) {
+      edges {
+        node {
+          id
+          firstName
+          lastName
+          dob
+          jsonExt
+        }
+      }
+    }
+  }
+`;
+
 export function fetchCategoryForPicker(mm, filters) {
   const payload = formatPageQueryWithCount('category', filters, CATEGORY_FULL_PROJECTION(mm));
   return graphql(payload, 'CATEGORY_CATEGORY');

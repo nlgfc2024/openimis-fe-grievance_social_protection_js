@@ -3,19 +3,24 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
+import { injectIntl } from 'react-intl';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
-  Grid, Paper, Typography, Divider, IconButton,
+  Grid, Paper, Typography, Divider, Button,
+  RadioGroup, FormControlLabel, Radio,
 } from '@material-ui/core';
 import { Save } from '@material-ui/icons';
 import {
-  TextInput, journalize, PublishedComponent, FormattedMessage,
+  TextInput, journalize, coreAlert, PublishedComponent, FormattedMessage, formatMessage, decodeId,
+  withHistory, withModulesManager, historyPush,
 } from '@openimis/fe-core';
 import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
+import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
+import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
 import ParticipantPanel from '../components/ParticipantPanel';
 
 const styles = (theme) => ({
@@ -34,7 +39,13 @@ class AddTicketPage extends Component {
       stateEdited: {},
       grievantType: null,
       benefitPlan: null,
+      project: null,
+      household: null,
       isSaved: false,
+      // 'existing' -> pick an individual already in the system;
+      // 'manual'   -> capture the complainant's details by hand.
+      individualEntryMode: 'existing',
+      manualIndividual: {},
     };
   }
 
@@ -42,14 +53,72 @@ class AddTicketPage extends Component {
   componentDidUpdate(prevPops, prevState, snapshort) {
     if (prevPops.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
+      const { intl, mutationError } = this.props;
+      if (mutationError) {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.error.title'),
+          mutationError.detail || mutationError.message
+            || formatMessage(intl, MODULE_NAME, 'ticket.mutation.create.error'),
+        );
+      } else {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.create.success'),
+        );
+      }
     }
   }
 
+  isManualIndividual = () => this.state.grievantType === 'individual'
+    && this.state.individualEntryMode === 'manual';
+
+  canSave = () => {
+    const { stateEdited, manualIndividual, isSaved } = this.state;
+    if (isSaved || !stateEdited.channel || !stateEdited.title) return false;
+    if (this.isManualIndividual()) {
+      return !!manualIndividual.firstName && !!manualIndividual.lastName;
+    }
+    const needsReporter = ['individual', 'beneficiary', 'user'].includes(stateEdited.reporterType);
+    return !needsReporter || !!stateEdited.reporter;
+  };
+
+  // The create-ticket mutation has no field for an unregistered complainant's
+  // identity, so a manually captured individual is recorded in the grievance
+  // description. The ticket is still tagged reporterType = 'individual' but
+  // carries no reporterId.
+  buildDescriptionWithManualComplainant = () => {
+    const { intl } = this.props;
+    const { stateEdited, manualIndividual } = this.state;
+    const lines = [
+      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.firstName'), manualIndividual.firstName],
+      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.lastName'), manualIndividual.lastName],
+      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.dob'), manualIndividual.dob],
+      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.phone'), manualIndividual.phone],
+      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.nationalId'), manualIndividual.nationalId],
+    ]
+      .filter(([, v]) => !!v)
+      .map(([label, v]) => `${label}: ${v}`);
+    if (!lines.length) return stateEdited.description;
+    const header = formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.header');
+    const block = `${header}\n${lines.join('\n')}`;
+    return stateEdited.description ? `${stateEdited.description}\n\n${block}` : block;
+  };
+
   save = () => {
+    const ticket = { ...this.state.stateEdited };
+    if (this.isManualIndividual()) {
+      ticket.reporter = null;
+      ticket.reporterType = 'individual';
+      ticket.description = this.buildDescriptionWithManualComplainant();
+    } else if (this.state.grievantType === 'beneficiary') {
+      // The reporter picked through the phase/project/household chain is an
+      // Individual (the grievance model can't hold a GroupBeneficiary).
+      ticket.reporterType = 'individual';
+    }
     this.props.createTicket(
-      this.state.stateEdited,
+      ticket,
       this.props.grievanceConfig,
-      `Created Ticket ${this.state.stateEdited.title}`,
+      `Created Ticket ${ticket.title}`,
     );
     this.setState({ isSaved: true });
   };
@@ -64,21 +133,47 @@ class AddTicketPage extends Component {
   updateTypeOfGrievant = (field, value) => {
     this.updateAttribute('reporter', null);
     this.updateAttribute('reporterType', value);
-    this.setState((state) => ({
+    this.setState({
       grievantType: value,
+      benefitPlan: null,
+      project: null,
+      household: null,
+      individualEntryMode: 'existing',
+      manualIndividual: {},
+    });
+  };
+
+  updateIndividualEntryMode = (mode) => {
+    this.updateAttribute('reporter', null);
+    this.setState({ individualEntryMode: mode, manualIndividual: {} });
+  };
+
+  updateManualIndividual = (k, v) => {
+    this.setState((state) => ({
+      manualIndividual: { ...state.manualIndividual, [k]: v },
+      isSaved: false,
     }));
   };
 
   updateBenefitPlan = (field, value) => {
     this.updateAttribute('reporter', null);
-    this.setState((state) => ({
-      benefitPlan: value,
-    }));
+    this.setState({ benefitPlan: value, project: null, household: null });
+  };
+
+  updateProject = (value) => {
+    this.updateAttribute('reporter', null);
+    this.setState({ project: value, household: null });
+  };
+
+  updateHousehold = (value) => {
+    this.updateAttribute('reporter', null);
+    this.setState({ household: value });
   };
 
   render() {
     const {
       classes,
+      intl,
       titleone = ' Ticket.ComplainantInformation',
       titletwo = ' Ticket.DescriptionOfEvents',
       titleParams = { label: EMPTY_STRING },
@@ -88,8 +183,14 @@ class AddTicketPage extends Component {
       stateEdited,
       grievantType,
       benefitPlan,
+      project,
+      household,
       isSaved,
+      individualEntryMode,
+      manualIndividual,
     } = this.state;
+
+    const phaseLabel = formatMessage(intl, MODULE_NAME, 'ticket.phase');
 
     return (
       <div className={classes.page}>
@@ -117,26 +218,97 @@ class AddTicketPage extends Component {
                 </Grid>
                 {grievantType === 'individual' && (
                   <>
-                    <Grid item xs={3} className={classes.item}>
-                      <PublishedComponent
-                        pubRef="socialProtection.BenefitPlanPicker"
-                        withNull
-                        label="socialProtection.benefitPlan"
-                        value={benefitPlan}
-                        onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
-                        readOnly={isSaved}
+                    <Grid item xs={12} className={classes.item}>
+                      <RadioGroup
+                        row
+                        value={individualEntryMode}
+                        onChange={(e) => this.updateIndividualEntryMode(e.target.value)}
+                      >
+                        <FormControlLabel
+                          value="existing"
+                          control={<Radio color="primary" />}
+                          disabled={isSaved}
+                          label={formatMessage(intl, MODULE_NAME, 'ticket.individualEntryMode.existing')}
+                        />
+                        <FormControlLabel
+                          value="manual"
+                          control={<Radio color="primary" />}
+                          disabled={isSaved}
+                          label={formatMessage(intl, MODULE_NAME, 'ticket.individualEntryMode.manual')}
                       />
+                      </RadioGroup>
                     </Grid>
+                    {individualEntryMode === 'existing' && (
                     <Grid item xs={3} className={classes.item}>
                       <PublishedComponent
                         pubRef="individual.IndividualPicker"
                         value={stateEdited.reporter}
                         label="Complainant"
                         onChange={(v) => this.updateAttribute('reporter', v)}
-                        benefitPlan={benefitPlan}
+                          readOnly={isSaved}
+                        />
+                      </Grid>
+                    )}
+                    {individualEntryMode === 'manual' && (
+                      <>
+                        <Grid item xs={3} className={classes.item}>
+                          <TextInput
+                            module={MODULE_NAME}
+                            label="ticket.manualIndividual.firstName"
+                            value={manualIndividual.firstName || EMPTY_STRING}
+                            onChange={(v) => this.updateManualIndividual('firstName', v)}
+                            required
+                            readOnly={isSaved}
+                          />
+                        </Grid>
+                        <Grid item xs={3} className={classes.item}>
+                          <TextInput
+                            module={MODULE_NAME}
+                            label="ticket.manualIndividual.lastName"
+                            value={manualIndividual.lastName || EMPTY_STRING}
+                            onChange={(v) => this.updateManualIndividual('lastName', v)}
+                            required
+                            readOnly={isSaved}
+                          />
+                        </Grid>
+                        <Grid item xs={3} className={classes.item}>
+                          <PublishedComponent
+                            pubRef="core.DatePicker"
+                            module={MODULE_NAME}
+                            label="ticket.manualIndividual.dob"
+                            value={manualIndividual.dob || null}
+                            onChange={(v) => this.updateManualIndividual('dob', v)}
+                            readOnly={isSaved}
+                          />
+                        </Grid>
+                        <Grid item xs={3} className={classes.item}>
+                          <TextInput
+                            module={MODULE_NAME}
+                            label="ticket.manualIndividual.phone"
+                            value={manualIndividual.phone || EMPTY_STRING}
+                            onChange={(v) => this.updateManualIndividual('phone', v)}
+                            readOnly={isSaved}
+                          />
+                        </Grid>
+                        <Grid item xs={3} className={classes.item}>
+                          <TextInput
+                            module={MODULE_NAME}
+                            label="ticket.manualIndividual.nationalId"
+                            value={manualIndividual.nationalId || EMPTY_STRING}
+                            onChange={(v) => this.updateManualIndividual('nationalId', v)}
                         readOnly={isSaved}
                       />
                     </Grid>
+                        <Grid item xs={12} className={classes.item}>
+                          <Typography variant="caption" color="textSecondary">
+                            <FormattedMessage
+                              module={MODULE_NAME}
+                              id="ticket.manualIndividual.note"
+                            />
+                          </Typography>
+                        </Grid>
+                      </>
+                    )}
                   </>
                 )}
                 {grievantType === 'beneficiary' && (
@@ -145,7 +317,9 @@ class AddTicketPage extends Component {
                       <PublishedComponent
                         pubRef="socialProtection.BenefitPlanPicker"
                         withNull
-                        label="socialProtection.benefitPlan"
+                        withLabel
+                        label={phaseLabel}
+                        type="GROUP"
                         value={benefitPlan}
                         onChange={(v) => this.updateBenefitPlan('benefitPlan', v)}
                         readOnly={isSaved}
@@ -154,11 +328,34 @@ class AddTicketPage extends Component {
                     {benefitPlan && (
                       <Grid item xs={3} className={classes.item}>
                         <PublishedComponent
-                          pubRef="socialProtection.BeneficiaryPicker"
+                          pubRef="projectSocialProtection.ProjectPicker"
+                          benefitPlanId={decodeId(benefitPlan.id)}
+                          multiple={false}
+                          withLabel
+                          label={formatMessage(intl, MODULE_NAME, 'ticket.project')}
+                          value={project}
+                          onChange={(v) => this.updateProject(v)}
+                          readOnly={isSaved}
+                        />
+                      </Grid>
+                    )}
+                    {project && (
+                      <Grid item xs={3} className={classes.item}>
+                        <ProjectHouseholdPicker
+                          project={project}
+                          value={household}
+                          onChange={(v) => this.updateHousehold(v)}
+                          readOnly={isSaved}
+                        />
+                      </Grid>
+                    )}
+                    {household && (
+                      <Grid item xs={3} className={classes.item}>
+                        <HouseholdMemberPicker
+                          group={household.group}
                           value={stateEdited.reporter}
                           label="Complainant"
                           onChange={(v) => this.updateAttribute('reporter', v)}
-                          benefitPlan={benefitPlan}
                           readOnly={isSaved}
                         />
                       </Grid>
@@ -180,7 +377,8 @@ class AddTicketPage extends Component {
               </Grid>
               <Divider />
               <Grid container className={classes.item}>
-                {(grievantType === 'individual' || grievantType === 'beneficiary') && (
+                {(grievantType === 'beneficiary'
+                  || (grievantType === 'individual' && individualEntryMode === 'existing')) && (
                   <ParticipantPanel
                     participantFields={this.props.grievanceConfig?.participantFields}
                     reporter={stateEdited.reporter}
