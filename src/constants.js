@@ -23,4 +23,6 @@ export const TASKS_MANAGEMENT_TASK_ROUTE_REF = 'tasksManagement.route.task';
 
 export const EMPTY_STRING = '';
 export const GRIEVANT_TYPE_LIST = ['individual', 'beneficiary', 'user'];
+
+export const REPORTER_PICKER_PAGE_SIZE = 50;
 export const GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY = 'grievance.MainMenu';
