@@ -67,6 +67,15 @@ export const HOUSEHOLD_MEMBERS_QUERY = `
   }
 `;
 
+// Participant json_ext a ticket would get for the selected reporter (district,
+// micro-catchment, project, hotspot, …) — resolved server-side so the intake
+// form can show it before the grievance is saved.
+export const REPORTER_DERIVED_FIELDS_QUERY = `
+  query GrievanceReporterDerivedFields($reporterType: String!, $reporterId: String!) {
+    grievanceReporterDerivedFields(reporterType: $reporterType, reporterId: $reporterId)
+  }
+`;
+
 export function fetchCategoryForPicker(mm, filters) {
   const payload = formatPageQueryWithCount('category', filters, CATEGORY_FULL_PROJECTION(mm));
   return graphql(payload, 'CATEGORY_CATEGORY');
