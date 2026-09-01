@@ -415,6 +415,19 @@ class EditTicketPage extends Component {
                     />
                   </Grid>
                 )}
+                {requiresWageAmount && (
+                  <Grid item xs={6} className={classes.item}>
+                    <NumberInput
+                      module={MODULE_NAME}
+                      label="ticket.wageAmount"
+                      value={stateEdited.wageAmount}
+                      onChange={(v) => this.updateAttribute('wageAmount', v)}
+                      min={0}
+                      required={isTerminalStatus}
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12} className={classes.item}>
                   <TextInput
                     label="ticket.description"
@@ -478,19 +491,6 @@ class EditTicketPage extends Component {
                         values={{ authority: ticketJsonExt.referred_to }}
                       />
                     </Typography>
-                  </Grid>
-                )}
-                {requiresWageAmount && (
-                  <Grid item xs={4} className={classes.item}>
-                    <NumberInput
-                      module={MODULE_NAME}
-                      label="ticket.wageAmount"
-                      value={stateEdited.wageAmount}
-                      onChange={(v) => this.updateAttribute('wageAmount', v)}
-                      min={0}
-                      required={isTerminalStatus}
-                      readOnly={propsReadOnly}
-                    />
                   </Grid>
                 )}
                 {isMakerChecker && (

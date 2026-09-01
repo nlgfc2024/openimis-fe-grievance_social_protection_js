@@ -181,6 +181,7 @@ export function formatTicketGQL(ticket) {
     ${ticket.dateOfIncident ? `dateOfIncident: "${formatGQLString(ticket.dateOfIncident)}"` : ''}
     ${!!ticket.channel && !!ticket.channel ? `channel: "${ticket.channel}"` : ''}
     ${!!ticket.flags && !!ticket.flags ? `flags: "${ticket.flags}"` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
   `;
 }
 

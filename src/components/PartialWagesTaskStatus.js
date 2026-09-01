@@ -10,10 +10,17 @@ import {
   parseData,
 } from '@openimis/fe-core';
 import { MODULE_NAME, PARTIAL_WAGES_TASK_BUSINESS_EVENT, TASKS_MANAGEMENT_TASK_ROUTE_REF } from '../constants';
+import { isBase64Encoded } from '../utils/utils';
 
 const STATUS_COLORS = {
   COMPLETED: 'primary',
   FAILED: 'secondary',
+};
+
+// ticketId can arrive already-decoded (EditTicketPage) or as a base64 relay id.
+const toRawId = (id) => {
+  if (!id) return null;
+  return isBase64Encoded(id) ? decodeId(id) : id;
 };
 
 function PartialWagesTaskStatus({ ticketId }) {
@@ -21,7 +28,7 @@ function PartialWagesTaskStatus({ ticketId }) {
   const history = useHistory();
   const { formatMessage } = useTranslations(MODULE_NAME, modulesManager);
 
-  const entityId = ticketId ? decodeId(ticketId) : null;
+  const entityId = toRawId(ticketId);
 
   const { data } = useGraphqlQuery(
     `
