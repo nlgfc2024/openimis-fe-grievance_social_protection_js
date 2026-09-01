@@ -49,14 +49,48 @@ const styles = (theme) => ({
   },
 });
 
-// `resolution` is an SLA target stored as a "days,hours" string
-// (days 0-98, hours 0-23). Edited via two number inputs; recombined on change.
+// `resolution` is the SLA target ("days,hours" string), driven by the
+// grievance's category — shown read-only, never captured by hand.
 const parseResolution = (value) => {
   const match = /^(\d{1,2}),(\d{1,2})$/.exec(value || '');
   return match
     ? { days: Number(match[1]), hours: Number(match[2]) }
     : { days: null, hours: null };
 };
+
+const plural = (n, unit) => `${n} ${unit}${n === 1 ? '' : 's'}`;
+
+// "2 days 12 hours" / "3 days" / "6 hours" / "Immediate" / "".
+const formatDaysHours = (days, hours) => {
+  if (days == null && hours == null) return EMPTY_STRING;
+  if (!days && !hours) return 'Immediate';
+  return [days && plural(days, 'day'), hours && plural(hours, 'hour')].filter(Boolean).join(' ');
+};
+
+// Time a grievance has been open: hour precision from dateCreated while still
+// open, day precision (server-computed) once resolved.
+const formatTimeElapsed = (ticket) => {
+  if (ticket.durationDays == null) return EMPTY_STRING;
+  if (ticket.slaState !== 'resolved' && ticket.dateCreated) {
+    const ms = Date.now() - new Date(ticket.dateCreated).getTime();
+    if (ms >= 0) {
+      const totalHours = Math.floor(ms / (1000 * 60 * 60));
+      return formatDaysHours(Math.floor(totalHours / 24), totalHours % 24) || '0 hours';
+    }
+  }
+  return plural(ticket.durationDays, 'day');
+};
+
+// slaState is 'within' | 'breached' | 'resolved' (computed server-side).
+const SLA_STATE_COLOR = {
+  within: '#2e7d32',
+  breached: '#c62828',
+  resolved: '#616161',
+};
+
+const categoryResolutionTime = (grievanceConfig, category) => (grievanceConfig
+  ?.grievanceDefaultResolutionsByCategory || [])
+  .find((entry) => entry.category === category)?.resolutionTime;
 
 class EditTicketPage extends Component {
   constructor(props) {
@@ -119,16 +153,17 @@ class EditTicketPage extends Component {
     }));
   };
 
-  updateResolutionPart = (part, raw) => {
-    const current = parseResolution(this.state.stateEdited.resolution);
-    const next = {
-      ...current,
-      [part]: (raw === null || raw === undefined || raw === '') ? null : Number(raw),
-    };
-    const value = (next.days === null && next.hours === null)
-      ? null
-      : `${next.days ?? 0},${next.hours ?? 0}`;
-    this.updateAttribute('resolution', value);
+  // Category drives the SLA — keep `resolution` in step when it changes
+  // (the backend re-derives it authoritatively on save regardless).
+  updateCategory = (category) => {
+    const resolution = categoryResolutionTime(this.props.grievanceConfig, category);
+    this.setState((state) => ({
+      stateEdited: {
+        ...state.stateEdited,
+        category,
+        ...(resolution ? { resolution } : {}),
+      },
+    }));
   };
 
   goToList = () => {
@@ -160,7 +195,9 @@ class EditTicketPage extends Component {
 
     const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
     const wasReferred = !!ticketJsonExt.was_referred;
-    const resolution = parseResolution(stateEdited.resolution);
+    const resolution = parseResolution(
+      categoryResolutionTime(grievanceConfig, stateEdited.category) || stateEdited.resolution,
+    );
 
     // Walk-in / unregistered complainant captured by hand (no reporter FK).
     const unregisteredReporter = ticketJsonExt.unregistered_reporter;
@@ -362,7 +399,7 @@ class EditTicketPage extends Component {
                   <PublishedComponent
                     pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                     value={stateEdited.category}
-                    onChange={(v) => this.updateAttribute('category', v)}
+                    onChange={(v) => this.updateCategory(v)}
                     required={false}
                     readOnly={propsReadOnly}
                   />
@@ -458,30 +495,48 @@ class EditTicketPage extends Component {
               </Grid>
               <Divider />
               <Grid container className={classes.item}>
-                <Grid item xs={6} className={classes.item}>
-                  <NumberInput
+                <Grid item xs={3} className={classes.item}>
+                  <TextInput
                     module={MODULE_NAME}
-                    label="ticket.resolutionDays"
-                    value={resolution.days}
-                    onChange={(v) => this.updateResolutionPart('days', v)}
-                    min={0}
-                    max={98}
-                    allowDecimals={false}
-                    readOnly={propsReadOnly}
+                    label="ticket.resolutionPeriod"
+                    value={formatDaysHours(resolution.days, resolution.hours)}
+                    onChange={() => {}}
+                    readOnly
                   />
                 </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <NumberInput
-                    module={MODULE_NAME}
-                    label="ticket.resolutionHours"
-                    value={resolution.hours}
-                    onChange={(v) => this.updateResolutionPart('hours', v)}
-                    min={0}
-                    max={23}
-                    allowDecimals={false}
-                    readOnly={propsReadOnly}
-                  />
-                </Grid>
+                {!!stateEdited.id && (
+                  <>
+                    <Grid item xs={3} className={classes.item}>
+                      <PublishedComponent
+                        pubRef="core.DatePicker"
+                        module={MODULE_NAME}
+                        label="ticket.dueDate"
+                        value={stateEdited.dueDate || null}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.timeElapsed"
+                        value={formatTimeElapsed(stateEdited)}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    {stateEdited.slaState && (
+                      <Grid item xs={3} className={classes.item}>
+                        <Typography variant="caption" color="textSecondary" component="div">
+                          <FormattedMessage module={MODULE_NAME} id="ticket.slaState" />
+                        </Typography>
+                        <Typography style={{ color: SLA_STATE_COLOR[stateEdited.slaState], fontWeight: 500 }}>
+                          <FormattedMessage module={MODULE_NAME} id={`ticket.slaState.${stateEdited.slaState}`} />
+                        </Typography>
+                      </Grid>
+                    )}
+                  </>
+                )}
                 {wasReferred && (
                   <Grid item xs={12} className={classes.item}>
                     <Typography color="textSecondary">
