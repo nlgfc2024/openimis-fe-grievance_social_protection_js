@@ -65,7 +65,13 @@ class AddTicketPage extends Component {
           formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
           formatMessage(intl, MODULE_NAME, 'ticket.mutation.create.success'),
         );
+        // Return to the grievances list once the user dismisses the success alert.
+        this.redirectAfterAlert = true;
       }
+    }
+    if (this.redirectAfterAlert && prevPops.alert && !this.props.alert) {
+      this.redirectAfterAlert = false;
+      this.goToList();
     }
   }
 
@@ -108,7 +114,7 @@ class AddTicketPage extends Component {
     this.setState({ isSaved: true });
   };
 
-  cancel = () => {
+  goToList = () => {
     historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
   };
 
@@ -465,7 +471,7 @@ class AddTicketPage extends Component {
             <Button
               variant="outlined"
               startIcon={<Cancel />}
-              onClick={this.cancel}
+              onClick={this.goToList}
             >
               <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
             </Button>
@@ -493,6 +499,7 @@ const mapStateToProps = (state, props) => ({
   mutation: state.grievanceSocialProtection.mutation,
   mutationError: state.grievanceSocialProtection.mutationError,
   grievanceConfig: state.grievanceSocialProtection.grievanceConfig,
+  alert: state.core?.alert,
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ createTicket, journalize, coreAlert }, dispatch);
