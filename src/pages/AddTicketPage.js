@@ -82,34 +82,19 @@ class AddTicketPage extends Component {
     return !needsReporter || !!stateEdited.reporter;
   };
 
-  // The create-ticket mutation has no field for an unregistered complainant's
-  // identity, so a manually captured individual is recorded in the grievance
-  // description. The ticket is still tagged reporterType = 'individual' but
-  // carries no reporterId.
-  buildDescriptionWithManualComplainant = () => {
-    const { intl } = this.props;
-    const { stateEdited, manualIndividual } = this.state;
-    const lines = [
-      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.firstName'), manualIndividual.firstName],
-      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.lastName'), manualIndividual.lastName],
-      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.dob'), manualIndividual.dob],
-      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.phone'), manualIndividual.phone],
-      [formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.nationalId'), manualIndividual.nationalId],
-    ]
-      .filter(([, v]) => !!v)
-      .map(([label, v]) => `${label}: ${v}`);
-    if (!lines.length) return stateEdited.description;
-    const header = formatMessage(intl, MODULE_NAME, 'ticket.manualIndividual.header');
-    const block = `${header}\n${lines.join('\n')}`;
-    return stateEdited.description ? `${stateEdited.description}\n\n${block}` : block;
-  };
-
   save = () => {
     const ticket = { ...this.state.stateEdited };
     if (this.isManualIndividual()) {
+      // Walk-in / unregistered complainant: send the captured details as their
+      // own mutation fields (backend stores them on json_ext)
+      const { manualIndividual } = this.state;
       ticket.reporter = null;
-      ticket.reporterType = 'individual';
-      ticket.description = this.buildDescriptionWithManualComplainant();
+      delete ticket.reporterType;
+      ticket.reporterFirstName = manualIndividual.firstName;
+      ticket.reporterLastName = manualIndividual.lastName;
+      ticket.reporterDob = manualIndividual.dob;
+      ticket.reporterPhone = manualIndividual.phone;
+      ticket.reporterNationalId = manualIndividual.nationalId;
     } else if (this.state.grievantType === 'beneficiary') {
       // The reporter picked through the phase/project/household chain is an
       // Individual (the grievance model can't hold a GroupBeneficiary).

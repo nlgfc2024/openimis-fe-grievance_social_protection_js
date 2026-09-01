@@ -127,6 +127,18 @@ class EditTicketPage extends Component {
     const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
     const wasReferred = !!ticketJsonExt.was_referred;
 
+    // Walk-in / unregistered complainant captured by hand (no reporter FK).
+    const unregisteredReporter = ticketJsonExt.unregistered_reporter;
+    const unregisteredReporterAsIndividual = unregisteredReporter && {
+      firstName: unregisteredReporter.first_name,
+      lastName: unregisteredReporter.last_name,
+      dob: unregisteredReporter.dob,
+      jsonExt: {
+        national_id: unregisteredReporter.national_id,
+        household_mobile_number: unregisteredReporter.phone,
+      },
+    };
+
     const categoryWorkflow = (grievanceConfig?.grievanceCategoryWorkflows || [])
       .find((workflow) => workflow.category === stateEdited.category);
     const isMakerChecker = !!categoryWorkflow?.makerChecker;
@@ -140,7 +152,7 @@ class EditTicketPage extends Component {
       <div className={classes.page}>
         <Grid container>
           <Grid item xs={12}>
-            {stateEdited.reporter && (
+            {(stateEdited.reporter || unregisteredReporter) && (
             <Paper className={classes.paper}>
               <Grid container className={classes.tableTitle}>
                 <Grid item xs={8} className={classes.tableTitle}>
@@ -150,6 +162,13 @@ class EditTicketPage extends Component {
                 </Grid>
               </Grid>
               <Grid container className={classes.item}>
+                {unregisteredReporter && (
+                  <Grid item xs={12} className={classes.item}>
+                    <Typography variant="caption" color="textSecondary">
+                      <FormattedMessage module={MODULE_NAME} id="ticket.manualIndividual.note" />
+                    </Typography>
+                  </Grid>
+                )}
                 {stateEdited.reporterTypeName === 'individual' && (
                 <Grid item xs={3} className={classes.item}>
                   <PublishedComponent
@@ -211,6 +230,42 @@ class EditTicketPage extends Component {
                     readOnly
                   />
                 </Grid>
+                )}
+                {!stateEdited.reporter && unregisteredReporter && (
+                  <>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.firstName"
+                        value={unregisteredReporter.first_name || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.lastName"
+                        value={unregisteredReporter.last_name || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.dob"
+                        value={unregisteredReporter.dob || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <ParticipantPanel
+                      participantFields={this.props.grievanceConfig?.participantFields}
+                      reporter={unregisteredReporterAsIndividual}
+                      ticketJsonExt={stateEdited.jsonExt}
+                    />
+                  </>
                 )}
               </Grid>
             </Paper>
