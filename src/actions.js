@@ -135,6 +135,20 @@ export function fetchComments(ticket) {
   return { type: 'COMMENT_COMMENTS', payload: { data: [] } };
 }
 
+// Hand-captured walk-in complainant. The backend stores these on
+// ticket.json_ext['unregistered_reporter'] and ignores them when reporterId is
+// set. See the grievance module README for why walk-ins aren't auto-registered.
+function formatUnregisteredReporterGQL(ticket) {
+  if (ticket.reporter) return '';
+  return [
+    ticket.reporterFirstName ? `reporterFirstName: "${formatGQLString(ticket.reporterFirstName)}"` : '',
+    ticket.reporterLastName ? `reporterLastName: "${formatGQLString(ticket.reporterLastName)}"` : '',
+    ticket.reporterDob ? `reporterDob: "${formatGQLString(ticket.reporterDob)}"` : '',
+    ticket.reporterPhone ? `reporterPhone: "${formatGQLString(ticket.reporterPhone)}"` : '',
+    ticket.reporterNationalId ? `reporterNationalId: "${formatGQLString(ticket.reporterNationalId)}"` : '',
+  ].filter(Boolean).join('\n    ');
+}
+
 export function formatTicketGQL(ticket) {
   return `
     ${ticket.id !== undefined && ticket.id !== null ? `id: "${ticket.id}"` : ''}
@@ -149,7 +163,7 @@ export function formatTicketGQL(ticket) {
       : `reporterId: "${ticket.reporter.id}"`)
     : ''}
     ${!!ticket.reporterType && !!ticket.reporterType ? `reporterType: "${ticket.reporterType}"` : ''}
-    ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
+    ${formatUnregisteredReporterGQL(ticket)}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: "${formatGQLString(ticket.status)}"` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
@@ -176,7 +190,7 @@ export function formatUpdateTicketGQL(ticket) {
       : `reporterId: "${ticket.reporter.id}"`)
     : ''}
     ${!!ticket.reporter && !!ticket.reporter ? `reporterType: "${ticket.reporterTypeName}"` : ''}
-    ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
+    ${formatUnregisteredReporterGQL(ticket)}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
     ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}

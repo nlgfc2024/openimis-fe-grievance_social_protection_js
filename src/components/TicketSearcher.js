@@ -242,7 +242,9 @@ class TicketSearcher extends Component {
       );
     }
     if (ticket.reporterTypeName === null) {
-      return `${formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser')}`;
+      // Walk-in complainant captured by hand (see grievance module README).
+      const name = [ticket.reporterFirstName, ticket.reporterLastName].filter(Boolean).join(' ');
+      return name || `${formatMessage(this.props.intl, MODULE_NAME, 'anonymousUser')}`;
     }
     return '';
   };
