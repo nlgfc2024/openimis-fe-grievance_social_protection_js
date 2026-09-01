@@ -106,6 +106,7 @@ export function fetchTicket(mm, filters) {
     'resolution', 'title', 'dateOfIncident', 'dateCreated',
     'attendingStaff {id, username}', 'version', 'isHistory,', 'jsonExt',
     'reporterFirstName', 'reporterLastName', 'reporterDob', 'wageAmount',
+    'durationDays', 'slaState',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',
