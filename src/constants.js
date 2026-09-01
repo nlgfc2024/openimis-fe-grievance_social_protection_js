@@ -24,3 +24,4 @@ export const TASKS_MANAGEMENT_TASK_ROUTE_REF = 'tasksManagement.route.task';
 export const EMPTY_STRING = '';
 export const GRIEVANT_TYPE_LIST = ['individual', 'beneficiary', 'user'];
 export const GRIEVANCE_MAIN_MENU_CONTRIBUTION_KEY = 'grievance.MainMenu';
+export const TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY = 'grievanceSocialProtection.TicketSearcher.Action';

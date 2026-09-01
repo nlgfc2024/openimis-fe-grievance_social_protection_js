@@ -10,6 +10,7 @@ import GrievanceMainMenu from './menu/GrievanceMainMenu';
 import TicketsPage from './pages/TicketsPage';
 import TicketPage from './pages/TicketPage';
 import TicketSearcher from './components/TicketSearcher';
+import TicketAddButton from './components/TicketAddButton';
 import TicketPriorityPicker from './pickers/TicketPriorityPicker';
 import TicketStatusPicker from './pickers/TicketStatusPicker';
 import CategoryPicker from './pickers/CategoryPicker';
@@ -22,6 +23,7 @@ import {
   MODULE_NAME,
   RIGHT_TICKET_ADD,
   RIGHT_TICKET_SEARCH,
+  TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
 } from './constants';
 
 const ROUTE_TICKET_TICKETS = 'ticket/tickets';
@@ -54,6 +56,7 @@ const DEFAULT_CONFIG = {
     { path: `${ROUTE_TICKET_TICKET}/:ticket_uuid?/:version?`, component: TicketPage },
     { path: `${ROUTE_TICKET_NEW_TICKET}`, component: TicketPage },
   ],
+  [TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY]: TicketAddButton,
   'core.MainMenu': [{ name: 'GrievanceMainMenu', component: GrievanceMainMenu }],
   'grievance.MainMenu': [
     {

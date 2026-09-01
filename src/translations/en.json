@@ -79,6 +79,7 @@
     "ticketSummaries":"({count}) Grievance(s)",
     "action.AddTicket.tooltip":"Add Grievance",
     "addNewticketTooltip":"Add Grievance",
+    "tickets.searcherAddAction":"Add Grievance",
     "ticket.resolution":"RESOLUTION",
     "ticket.title":"Grievance Title",
     "Ticket Status.Waiting":"Waiting",
