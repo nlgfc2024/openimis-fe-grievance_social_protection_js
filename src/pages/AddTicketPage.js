@@ -13,8 +13,8 @@ import {
 } from '@material-ui/core';
 import { Save, Cancel } from '@material-ui/icons';
 import {
-  TextInput, journalize, coreAlert, PublishedComponent, FormattedMessage, formatMessage, decodeId,
-  withHistory, withModulesManager, historyPush,
+  TextInput, NumberInput, journalize, coreAlert, PublishedComponent, FormattedMessage, formatMessage,
+  decodeId, withHistory, withModulesManager, historyPush,
 } from '@openimis/fe-core';
 import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
@@ -186,6 +186,11 @@ class AddTicketPage extends Component {
     } = this.state;
 
     const phaseLabel = formatMessage(intl, MODULE_NAME, 'ticket.phase');
+
+    // Claims that carry an amount (category workflow `requires_amount`) — the
+    // complainant states it when filing; not mandatory at intake.
+    const requiresWageAmount = !!(this.props.grievanceConfig?.grievanceCategoryWorkflows || [])
+      .find((workflow) => workflow.category === stateEdited.category)?.requiresAmount;
 
     return (
       <div className={classes.page}>
@@ -452,6 +457,18 @@ class AddTicketPage extends Component {
                     readOnly={isSaved}
                   />
                 </Grid>
+                {requiresWageAmount && (
+                  <Grid item xs={6} className={classes.item}>
+                    <NumberInput
+                      module={MODULE_NAME}
+                      label="ticket.wageAmount"
+                      value={stateEdited.wageAmount}
+                      onChange={(v) => this.updateAttribute('wageAmount', v)}
+                      min={0}
+                      readOnly={isSaved}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12} className={classes.item}>
                   <TextInput
                     label="ticket.ticketDescription"
