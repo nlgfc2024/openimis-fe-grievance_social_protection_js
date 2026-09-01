@@ -21,7 +21,7 @@ import { EMPTY_STRING, MODULE_NAME } from '../constants';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
 import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
-import ParticipantPanel from '../components/ParticipantPanel';
+import ReporterDerivedPanel from '../components/ReporterDerivedPanel';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -207,7 +207,7 @@ class AddTicketPage extends Component {
                 </Grid>
                 {grievantType === 'individual' && (
                   <>
-                    <Grid item xs={12} className={classes.item}>
+                    <Grid item xs={9} className={classes.item} container alignItems="center">
                       <RadioGroup
                         row
                         value={individualEntryMode}
@@ -367,8 +367,9 @@ class AddTicketPage extends Component {
               <Divider />
               <Grid container className={classes.item}>
                 {(grievantType === 'beneficiary'
-                  || (grievantType === 'individual' && individualEntryMode === 'existing')) && (
-                  <ParticipantPanel
+                  || (grievantType === 'individual' && individualEntryMode === 'existing'))
+                  && stateEdited.reporter && (
+                  <ReporterDerivedPanel
                     participantFields={this.props.grievanceConfig?.participantFields}
                     reporter={stateEdited.reporter}
                   />
