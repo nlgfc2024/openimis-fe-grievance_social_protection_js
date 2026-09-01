@@ -466,16 +466,7 @@ class AddTicketPage extends Component {
           </Grid>
         </Grid>
 
-        <Grid container justify="flex-end" spacing={1} className={classes.item}>
-          <Grid item>
-            <Button
-              variant="outlined"
-              startIcon={<Cancel />}
-              onClick={this.goToList}
-            >
-              <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
-            </Button>
-          </Grid>
+        <Grid container justify="flex-start" spacing={1} className={classes.item}>
           <Grid item>
             <Button
               variant="contained"
@@ -485,6 +476,15 @@ class AddTicketPage extends Component {
               disabled={!this.canSave()}
             >
               <FormattedMessage module={MODULE_NAME} id="ticket.saveButton" />
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              startIcon={<Cancel />}
+              onClick={this.goToList}
+            >
+              <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
             </Button>
           </Grid>
         </Grid>
