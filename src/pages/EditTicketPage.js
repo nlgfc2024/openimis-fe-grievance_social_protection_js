@@ -49,6 +49,15 @@ const styles = (theme) => ({
   },
 });
 
+// `resolution` is an SLA target stored as a "days,hours" string
+// (days 0-98, hours 0-23). Edited via two number inputs; recombined on change.
+const parseResolution = (value) => {
+  const match = /^(\d{1,2}),(\d{1,2})$/.exec(value || '');
+  return match
+    ? { days: Number(match[1]), hours: Number(match[2]) }
+    : { days: null, hours: null };
+};
+
 class EditTicketPage extends Component {
   constructor(props) {
     super(props);
@@ -110,6 +119,22 @@ class EditTicketPage extends Component {
     }));
   };
 
+  updateResolutionPart = (part, raw) => {
+    const current = parseResolution(this.state.stateEdited.resolution);
+    const next = {
+      ...current,
+      [part]: (raw === null || raw === undefined || raw === '') ? null : Number(raw),
+    };
+    const value = (next.days === null && next.hours === null)
+      ? null
+      : `${next.days ?? 0},${next.hours ?? 0}`;
+    this.updateAttribute('resolution', value);
+  };
+
+  goToList = () => {
+    historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
+  };
+
   doesTicketChange = () => {
     const { ticket } = this.props;
     const { stateEdited } = this.state;
@@ -135,6 +160,7 @@ class EditTicketPage extends Component {
 
     const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
     const wasReferred = !!ticketJsonExt.was_referred;
+    const resolution = parseResolution(stateEdited.resolution);
 
     // Walk-in / unregistered complainant captured by hand (no reporter FK).
     const unregisteredReporter = ticketJsonExt.unregistered_reporter;
@@ -419,12 +445,27 @@ class EditTicketPage extends Component {
               </Grid>
               <Divider />
               <Grid container className={classes.item}>
-                <Grid item xs={4} className={classes.item}>
-                  <TextInput
-                    label="ticket.resolution"
-                    value={stateEdited.resolution}
-                    onChange={(v) => this.updateAttribute('resolution', v)}
-                    required={false}
+                <Grid item xs={6} className={classes.item}>
+                  <NumberInput
+                    module={MODULE_NAME}
+                    label="ticket.resolutionDays"
+                    value={resolution.days}
+                    onChange={(v) => this.updateResolutionPart('days', v)}
+                    min={0}
+                    max={98}
+                    allowDecimals={false}
+                    readOnly={propsReadOnly}
+                  />
+                </Grid>
+                <Grid item xs={6} className={classes.item}>
+                  <NumberInput
+                    module={MODULE_NAME}
+                    label="ticket.resolutionHours"
+                    value={resolution.hours}
+                    onChange={(v) => this.updateResolutionPart('hours', v)}
+                    min={0}
+                    max={23}
+                    allowDecimals={false}
                     readOnly={propsReadOnly}
                   />
                 </Grid>
