@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, IconButton, Tooltip } from '@material-ui/core';
+import AddCommentIcon from '@material-ui/icons/AddComment';
 import { injectIntl } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -38,19 +39,13 @@ function GrievanceCommentDialog({
   const [benefitPlan, setBenefitPlan] = useState(null);
   return (
     <>
-      <Button
-        onClick={handleOpenModal}
-        variant="outlined"
-        color="#DFEDEF"
-        className={classes.button}
-        disabled={disabled}
-        style={{
-          border: '0px',
-          marginTop: '6px',
-        }}
-      >
-        Add Comment to a Grievance
-      </Button>
+      <Tooltip title={formatMessage('ticket.addComment.tooltip')}>
+        <span>
+          <IconButton onClick={handleOpenModal} disabled={disabled}>
+            <AddCommentIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
       <Dialog
         open={openCommentModal}
         onClose={handleOpenModal}

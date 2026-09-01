@@ -9,6 +9,7 @@ import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
 import PrintIcon from '@material-ui/icons/Print';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
+import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import {
   Grid,
@@ -17,6 +18,7 @@ import {
   Divider,
   IconButton,
   Button,
+  Tooltip,
 } from '@material-ui/core';
 import {
   journalize,
@@ -24,6 +26,7 @@ import {
   NumberInput,
   PublishedComponent,
   FormattedMessage,
+  formatMessage,
 } from '@openimis/fe-core';
 import _ from 'lodash';
 import { Save } from '@material-ui/icons';
@@ -219,13 +222,11 @@ class EditTicketPage extends Component {
                   <ReactToPrint content={() => this.componentRef}>
                     <PrintContextConsumer>
                       {({ handlePrint }) => (
-                        <IconButton
-                          variant="contained"
-                          component="label"
-                          onClick={handlePrint}
-                        >
-                          <PrintIcon />
-                        </IconButton>
+                        <Tooltip title={formatMessage(this.props.intl, MODULE_NAME, 'ticket.printGrievance.tooltip')}>
+                          <IconButton onClick={handlePrint}>
+                            <PrintIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
                     </PrintContextConsumer>
                   </ReactToPrint>
@@ -439,8 +440,10 @@ const mapDispatchToProps = (dispatch) => bindActionCreators(
   dispatch,
 );
 
-export default withTheme(
-  withStyles(styles)(
-    connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+export default injectIntl(
+  withTheme(
+    withStyles(styles)(
+      connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+    ),
   ),
 );
