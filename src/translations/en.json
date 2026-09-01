@@ -163,7 +163,6 @@
     "showHistory": "Show History",
     "tickets.version": "Version",
     "ticket.template.priority": "Priority",
-    "ticket.template.flags": "Flags",
     "ticket.template.channel": "Channel",
     "ticket.template.category": "Category",
     "ticket.template.dateOfIncident": "Date of Incident",
