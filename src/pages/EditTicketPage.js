@@ -32,7 +32,7 @@ import {
   FormattedMessage,
 } from '@openimis/fe-core';
 import _ from 'lodash';
-import { Save } from '@material-ui/icons';
+import { Save, Cancel } from '@material-ui/icons';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
@@ -498,27 +498,40 @@ class EditTicketPage extends Component {
                     <PartialWagesTaskStatus ticketId={stateEdited.id} />
                   </Grid>
                 )}
-                <Grid item xs={11} className={classes.item} />
-                <Grid item xs={1} className={classes.item}>
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    color="primary"
-                    onClick={this.save}
-                    disabled={
-                      propsReadOnly
-                      || !this.doesTicketChange()
-                      || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
-                      || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
-                    }
-                  >
-                    <Save />
-                  </IconButton>
-                </Grid>
               </Grid>
             </Paper>
           </Grid>
         </Grid>
+
+        {!propsReadOnly && (
+          <Grid container justify="flex-start" spacing={1} className={classes.item}>
+            <Grid item>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Save />}
+                onClick={this.save}
+                disabled={
+                  !this.doesTicketChange()
+                  || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
+                  || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
+                }
+              >
+                <FormattedMessage module={MODULE_NAME} id="ticket.updateButton" />
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                startIcon={<Cancel />}
+                onClick={this.goToList}
+              >
+                <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
+              </Button>
+            </Grid>
+          </Grid>
+        )}
+
         <div style={{ display: 'none' }}>
           <TicketPrintTemplate
             ref={(el) => (this.componentRef = el)}

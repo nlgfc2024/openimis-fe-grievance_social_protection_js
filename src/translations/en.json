@@ -54,6 +54,7 @@
     "addNewGrievanceTooltip": "Add Grievance",
     "ticket.ticketSummaries.delete": " ",
     "ticket.saveButton":"Save Grievance",
+    "ticket.updateButton":"Update Grievance",
     "ticket.cancelButton":"Cancel",
     "ticket.phase":"Phase",
     "ticket.project":"Project",
