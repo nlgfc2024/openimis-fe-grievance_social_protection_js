@@ -18,6 +18,7 @@ import {
   Divider,
   IconButton,
   Button,
+  Tooltip,
 } from '@material-ui/core';
 import {
   journalize,
@@ -362,13 +363,11 @@ class EditTicketPage extends Component {
                   <ReactToPrint content={() => this.componentRef}>
                     <PrintContextConsumer>
                       {({ handlePrint }) => (
-                        <IconButton
-                          variant="contained"
-                          component="label"
-                          onClick={handlePrint}
-                        >
-                          <PrintIcon />
-                        </IconButton>
+                        <Tooltip title={formatMessage(this.props.intl, MODULE_NAME, 'ticket.printGrievance.tooltip')}>
+                          <IconButton onClick={handlePrint}>
+                            <PrintIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
                     </PrintContextConsumer>
                   </ReactToPrint>

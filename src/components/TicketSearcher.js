@@ -23,8 +23,9 @@ import {
   CLEARED_STATE_FILTER,
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
-// import AddIcon from '@material-ui/icons/Add';
-import { MODULE_NAME, RIGHT_TICKET_EDIT } from '../constants';
+import {
+  MODULE_NAME, RIGHT_TICKET_EDIT, TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
+} from '../constants';
 import {
   fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
 } from '../actions';
@@ -391,6 +392,7 @@ class TicketSearcher extends Component {
           exportFields={exportFields}
           exportFieldsColumns={exportFieldsColumns}
           exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
+          actionsContributionKey={TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY}
           isCustomFiltering={this.isAdvancedCriteriaEnabled()}
           moduleName="grievance_social_protection"
           objectType="Ticket"

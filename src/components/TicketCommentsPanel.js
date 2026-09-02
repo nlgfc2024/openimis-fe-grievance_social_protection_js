@@ -20,7 +20,7 @@ import {
   withModulesManager,
 } from '@openimis/fe-core';
 import {
-  IconButton, Paper, Tooltip,
+  Box, IconButton, Paper, Tooltip,
 } from '@material-ui/core';
 import ReplayIcon from '@material-ui/icons/Replay';
 import DoneIcon from '@material-ui/icons/Done';
@@ -272,44 +272,50 @@ class TicketCommentPanel extends Component {
 
     const { comment, commenterType } = this.state;
 
+    const headerActionButtons = () => (
+      <Box display="flex" justifyContent="flex-end" width="100%">
+        <Tooltip title={formatMessage(this.props.intl, MODULE_NAME, 'ticket.reloadComments.tooltip')}>
+          <span>
+            <IconButton onClick={this.reload} disabled={this.isReadOnly()}>
+              <ReplayIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <GrievanceCommentDialog
+          handleComment={this.handleComment}
+          openCommentModal={this.state.openCommentModal}
+          handleOpenModal={this.handleOpenModal}
+          updateCommentAttribute={this.updateCommentAttribute}
+          comment={comment}
+          updateCommenterType={this.updateCommenterType}
+          commenterType={commenterType}
+          disabled={this.isReadOnly()}
+        />
+        <ReactToPrint content={() => this.componentRef}>
+          <PrintContextConsumer>
+            {({ handlePrint }) => (
+              <Tooltip title={formatMessage(this.props.intl, MODULE_NAME, 'ticket.printComments.tooltip')}>
+                <IconButton onClick={handlePrint}>
+                  <PrintIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </PrintContextConsumer>
+        </ReactToPrint>
+      </Box>
+    );
+
     return (
       <div className={classes.page}>
 
         <ProgressOrError error={errorTicketComments} />
 
         <Paper className={classes.paper}>
-          <div style={{ textAlign: 'end', background: '#b7d4d8', height: '2.5em' }}>
-            <IconButton variant="contained" component="label" onClick={this.reload} disabled={this.isReadOnly()}>
-              <ReplayIcon />
-            </IconButton>
-            <GrievanceCommentDialog
-              handleComment={this.handleComment}
-              openCommentModal={this.state.openCommentModal}
-              handleOpenModal={this.handleOpenModal}
-              updateCommentAttribute={this.updateCommentAttribute}
-              comment={comment}
-              updateCommenterType={this.updateCommenterType}
-              commenterType={commenterType}
-              disabled={this.isReadOnly()}
-            />
-            <ReactToPrint content={() => this.componentRef}>
-              <PrintContextConsumer>
-                {({ handlePrint }) => (
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    onClick={handlePrint}
-                  >
-                    <PrintIcon />
-                  </IconButton>
-                )}
-              </PrintContextConsumer>
-            </ReactToPrint>
-          </div>
           <Table
             module={MODULE_NAME}
             fetch={this.props.fetchComments}
             header={formatMessage(this.props.intl, MODULE_NAME, 'TicketCommentsPanel.table.header')}
+            extendHeader={headerActionButtons}
             headers={headers}
             itemFormatters={itemFormatters}
             items={this.isReadOnly() ? this.filterComments(ticketComments) : ticketComments}
