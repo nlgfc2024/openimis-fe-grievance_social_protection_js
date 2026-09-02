@@ -18,6 +18,7 @@ import {
 } from '@openimis/fe-core';
 import { createTicket } from '../actions';
 import { EMPTY_STRING, MODULE_NAME } from '../constants';
+import { toRawId } from '../utils/utils';
 import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
 import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
@@ -107,8 +108,13 @@ class AddTicketPage extends Component {
       ticket.reporterNationalId = manualIndividual.nationalId;
     } else if (this.state.grievantType === 'beneficiary') {
       // The reporter picked through the phase/project/household chain is an
-      // Individual (the grievance model can't hold a GroupBeneficiary).
+      // Individual (the grievance model can't hold a GroupBeneficiary). Send the
+      // selected project/household so the backend derives the participant
+      // fields from that exact enrolment, not an unrelated first one.
+      const { project, household } = this.state;
       ticket.reporterType = 'individual';
+      if (project?.id) ticket.reporterProjectId = toRawId(project.id);
+      if (household?.id) ticket.reporterGroupBeneficiaryId = toRawId(household.id);
     }
     this.props.createTicket(
       ticket,
@@ -387,6 +393,8 @@ class AddTicketPage extends Component {
                   <ReporterDerivedPanel
                     participantFields={this.props.grievanceConfig?.participantFields}
                     reporter={stateEdited.reporter}
+                    project={grievantType === 'beneficiary' ? project : null}
+                    household={grievantType === 'beneficiary' ? household : null}
                   />
                 )}
               </Grid>
