@@ -60,6 +60,10 @@ class AddTicketPage extends Component {
           mutationError.detail || mutationError.message
             || formatMessage(intl, MODULE_NAME, 'ticket.mutation.create.error'),
         );
+        // The save failed — unlock the form so the operator can correct the
+        // data and resubmit without reloading and losing their work.
+        // eslint-disable-next-line react/no-did-update-set-state
+        this.setState({ isSaved: false });
       } else {
         this.props.coreAlert(
           formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
