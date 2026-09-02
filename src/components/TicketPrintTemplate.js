@@ -105,10 +105,6 @@ const TicketPrintTemplate = forwardRef(({ ticket, reporter }, ref) => {
           <p className={classes.detailValue}>{ticket.category}</p>
         </div>
         <div className={classes.detailRow}>
-          <p className={classes.detailName}>{formatMessage('ticket.template.flags')}</p>
-          <p className={classes.detailValue}>{ticket.flags}</p>
-        </div>
-        <div className={classes.detailRow}>
           <p className={classes.detailName}>{formatMessage('ticket.template.priority')}</p>
           <p className={classes.detailValue}>{ticket.priority}</p>
         </div>

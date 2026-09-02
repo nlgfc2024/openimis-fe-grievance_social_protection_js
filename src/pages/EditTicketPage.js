@@ -5,11 +5,11 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/destructuring-assignment */
 import React, { Component, useRef } from 'react';
+import { injectIntl } from 'react-intl';
 import ReactToPrint, { PrintContextConsumer } from 'react-to-print';
 import PrintIcon from '@material-ui/icons/Print';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import {
   Grid,
@@ -22,14 +22,18 @@ import {
 } from '@material-ui/core';
 import {
   journalize,
+  coreAlert,
+  formatMessage,
+  historyPush,
+  withHistory,
+  withModulesManager,
   TextInput,
   NumberInput,
   PublishedComponent,
   FormattedMessage,
-  formatMessage,
 } from '@openimis/fe-core';
 import _ from 'lodash';
-import { Save } from '@material-ui/icons';
+import { Save, Cancel } from '@material-ui/icons';
 import { updateTicket, fetchTicket, createTicketComment } from '../actions';
 import { EMPTY_STRING, MODULE_NAME, TICKET_STATUSES } from '../constants';
 import TicketPrintTemplate from '../components/TicketPrintTemplate';
@@ -45,6 +49,49 @@ const styles = (theme) => ({
     height: '100%',
   },
 });
+
+// `resolution` is the SLA target ("days,hours" string), driven by the
+// grievance's category — shown read-only, never captured by hand.
+const parseResolution = (value) => {
+  const match = /^(\d{1,2}),(\d{1,2})$/.exec(value || '');
+  return match
+    ? { days: Number(match[1]), hours: Number(match[2]) }
+    : { days: null, hours: null };
+};
+
+const plural = (n, unit) => `${n} ${unit}${n === 1 ? '' : 's'}`;
+
+// "2 days 12 hours" / "3 days" / "6 hours" / "Immediate" / "".
+const formatDaysHours = (days, hours) => {
+  if (days == null && hours == null) return EMPTY_STRING;
+  if (!days && !hours) return 'Immediate';
+  return [days && plural(days, 'day'), hours && plural(hours, 'hour')].filter(Boolean).join(' ');
+};
+
+// Time a grievance has been open: hour precision from dateCreated while still
+// open, day precision (server-computed) once resolved.
+const formatTimeElapsed = (ticket) => {
+  if (ticket.durationDays == null) return EMPTY_STRING;
+  if (ticket.slaState !== 'resolved' && ticket.dateCreated) {
+    const ms = Date.now() - new Date(ticket.dateCreated).getTime();
+    if (ms >= 0) {
+      const totalHours = Math.floor(ms / (1000 * 60 * 60));
+      return formatDaysHours(Math.floor(totalHours / 24), totalHours % 24) || '0 hours';
+    }
+  }
+  return plural(ticket.durationDays, 'day');
+};
+
+// slaState is 'within' | 'breached' | 'resolved' (computed server-side).
+const SLA_STATE_COLOR = {
+  within: '#2e7d32',
+  breached: '#c62828',
+  resolved: '#616161',
+};
+
+const categoryResolutionTime = (grievanceConfig, category) => (grievanceConfig
+  ?.grievanceDefaultResolutionsByCategory || [])
+  .find((entry) => entry.category === category)?.resolutionTime;
 
 class EditTicketPage extends Component {
   constructor(props) {
@@ -72,6 +119,25 @@ class EditTicketPage extends Component {
   componentDidUpdate(prevPops, prevState, snapshort) {
     if (prevPops.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
+      const { intl, mutationError } = this.props;
+      if (mutationError) {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.error.title'),
+          mutationError.detail || mutationError.message
+            || formatMessage(intl, MODULE_NAME, 'ticket.mutation.update.error'),
+        );
+      } else {
+        this.props.coreAlert(
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.success.title'),
+          formatMessage(intl, MODULE_NAME, 'ticket.mutation.update.success'),
+        );
+        // Return to the grievances list once the user dismisses the success alert.
+        this.redirectAfterAlert = true;
+      }
+    }
+    if (this.redirectAfterAlert && prevPops.alert && !this.props.alert) {
+      this.redirectAfterAlert = false;
+      historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
     }
   }
 
@@ -86,6 +152,23 @@ class EditTicketPage extends Component {
     this.setState((state) => ({
       stateEdited: { ...state.stateEdited, [k]: v },
     }));
+  };
+
+  // Category drives the SLA — keep `resolution` in step when it changes
+  // (the backend re-derives it authoritatively on save regardless).
+  updateCategory = (category) => {
+    const resolution = categoryResolutionTime(this.props.grievanceConfig, category);
+    this.setState((state) => ({
+      stateEdited: {
+        ...state.stateEdited,
+        category,
+        ...(resolution ? { resolution } : {}),
+      },
+    }));
+  };
+
+  goToList = () => {
+    historyPush(this.props.modulesManager, this.props.history, 'grievanceSocialProtection.route.tickets');
   };
 
   doesTicketChange = () => {
@@ -113,6 +196,21 @@ class EditTicketPage extends Component {
 
     const ticketJsonExt = parseJsonExt(stateEdited.jsonExt);
     const wasReferred = !!ticketJsonExt.was_referred;
+    const resolution = parseResolution(
+      categoryResolutionTime(grievanceConfig, stateEdited.category) || stateEdited.resolution,
+    );
+
+    // Walk-in / unregistered complainant captured by hand (no reporter FK).
+    const unregisteredReporter = ticketJsonExt.unregistered_reporter;
+    const unregisteredReporterAsIndividual = unregisteredReporter && {
+      firstName: unregisteredReporter.first_name,
+      lastName: unregisteredReporter.last_name,
+      dob: unregisteredReporter.dob,
+      jsonExt: {
+        national_id: unregisteredReporter.national_id,
+        household_mobile_number: unregisteredReporter.phone,
+      },
+    };
 
     const categoryWorkflow = (grievanceConfig?.grievanceCategoryWorkflows || [])
       .find((workflow) => workflow.category === stateEdited.category);
@@ -127,7 +225,7 @@ class EditTicketPage extends Component {
       <div className={classes.page}>
         <Grid container>
           <Grid item xs={12}>
-            {stateEdited.reporter && (
+            {(stateEdited.reporter || unregisteredReporter) && (
             <Paper className={classes.paper}>
               <Grid container className={classes.tableTitle}>
                 <Grid item xs={8} className={classes.tableTitle}>
@@ -137,6 +235,13 @@ class EditTicketPage extends Component {
                 </Grid>
               </Grid>
               <Grid container className={classes.item}>
+                {unregisteredReporter && (
+                  <Grid item xs={12} className={classes.item}>
+                    <Typography variant="caption" color="textSecondary">
+                      <FormattedMessage module={MODULE_NAME} id="ticket.manualIndividual.note" />
+                    </Typography>
+                  </Grid>
+                )}
                 {stateEdited.reporterTypeName === 'individual' && (
                 <Grid item xs={3} className={classes.item}>
                   <PublishedComponent
@@ -199,6 +304,42 @@ class EditTicketPage extends Component {
                   />
                 </Grid>
                 )}
+                {!stateEdited.reporter && unregisteredReporter && (
+                  <>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.firstName"
+                        value={unregisteredReporter.first_name || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.lastName"
+                        value={unregisteredReporter.last_name || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.manualIndividual.dob"
+                        value={unregisteredReporter.dob || EMPTY_STRING}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <ParticipantPanel
+                      participantFields={this.props.grievanceConfig?.participantFields}
+                      reporter={unregisteredReporterAsIndividual}
+                      ticketJsonExt={stateEdited.jsonExt}
+                    />
+                  </>
+                )}
               </Grid>
             </Paper>
             )}
@@ -257,16 +398,7 @@ class EditTicketPage extends Component {
                   <PublishedComponent
                     pubRef="grievanceSocialProtection.DropDownCategoryPicker"
                     value={stateEdited.category}
-                    onChange={(v) => this.updateAttribute('category', v)}
-                    required={false}
-                    readOnly={propsReadOnly}
-                  />
-                </Grid>
-                <Grid item xs={6} className={classes.item}>
-                  <PublishedComponent
-                    pubRef="grievanceSocialProtection.FlagPicker"
-                    value={stateEdited.flags}
-                    onChange={(v) => this.updateAttribute('flags', v)}
+                    onChange={(v) => this.updateCategory(v)}
                     required={false}
                     readOnly={propsReadOnly}
                   />
@@ -319,6 +451,19 @@ class EditTicketPage extends Component {
                     />
                   </Grid>
                 )}
+                {requiresWageAmount && (
+                  <Grid item xs={6} className={classes.item}>
+                    <NumberInput
+                      module={MODULE_NAME}
+                      label="ticket.wageAmount"
+                      value={stateEdited.wageAmount}
+                      onChange={(v) => this.updateAttribute('wageAmount', v)}
+                      min={0}
+                      required={isTerminalStatus}
+                      readOnly={propsReadOnly}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12} className={classes.item}>
                   <TextInput
                     label="ticket.description"
@@ -349,15 +494,48 @@ class EditTicketPage extends Component {
               </Grid>
               <Divider />
               <Grid container className={classes.item}>
-                <Grid item xs={4} className={classes.item}>
+                <Grid item xs={3} className={classes.item}>
                   <TextInput
-                    label="ticket.resolution"
-                    value={stateEdited.resolution}
-                    onChange={(v) => this.updateAttribute('resolution', v)}
-                    required={false}
-                    readOnly={propsReadOnly}
+                    module={MODULE_NAME}
+                    label="ticket.resolutionPeriod"
+                    value={formatDaysHours(resolution.days, resolution.hours)}
+                    onChange={() => {}}
+                    readOnly
                   />
                 </Grid>
+                {!!stateEdited.id && (
+                  <>
+                    <Grid item xs={3} className={classes.item}>
+                      <PublishedComponent
+                        pubRef="core.DatePicker"
+                        module={MODULE_NAME}
+                        label="ticket.dueDate"
+                        value={stateEdited.dueDate || null}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    <Grid item xs={3} className={classes.item}>
+                      <TextInput
+                        module={MODULE_NAME}
+                        label="ticket.timeElapsed"
+                        value={formatTimeElapsed(stateEdited)}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </Grid>
+                    {stateEdited.slaState && (
+                      <Grid item xs={3} className={classes.item}>
+                        <Typography variant="caption" color="textSecondary" component="div">
+                          <FormattedMessage module={MODULE_NAME} id="ticket.slaState" />
+                        </Typography>
+                        <Typography style={{ color: SLA_STATE_COLOR[stateEdited.slaState], fontWeight: 500 }}>
+                          <FormattedMessage module={MODULE_NAME} id={`ticket.slaState.${stateEdited.slaState}`} />
+                        </Typography>
+                      </Grid>
+                    )}
+                  </>
+                )}
                 {wasReferred && (
                   <Grid item xs={12} className={classes.item}>
                     <Typography color="textSecondary">
@@ -369,45 +547,45 @@ class EditTicketPage extends Component {
                     </Typography>
                   </Grid>
                 )}
-                {requiresWageAmount && (
-                  <Grid item xs={4} className={classes.item}>
-                    <NumberInput
-                      module={MODULE_NAME}
-                      label="ticket.wageAmount"
-                      value={stateEdited.wageAmount}
-                      onChange={(v) => this.updateAttribute('wageAmount', v)}
-                      min={0}
-                      required={isTerminalStatus}
-                      readOnly={propsReadOnly}
-                    />
-                  </Grid>
-                )}
                 {isMakerChecker && (
                   <Grid item xs={12} className={classes.item}>
                     <PartialWagesTaskStatus ticketId={stateEdited.id} />
                   </Grid>
                 )}
-                <Grid item xs={11} className={classes.item} />
-                <Grid item xs={1} className={classes.item}>
-                  <IconButton
-                    variant="contained"
-                    component="label"
-                    color="primary"
-                    onClick={this.save}
-                    disabled={
-                      propsReadOnly
-                      || !this.doesTicketChange()
-                      || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
-                      || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
-                    }
-                  >
-                    <Save />
-                  </IconButton>
-                </Grid>
               </Grid>
             </Paper>
           </Grid>
         </Grid>
+
+        {!propsReadOnly && (
+          <Grid container justify="flex-start" spacing={1} className={classes.item}>
+            <Grid item>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Save />}
+                onClick={this.save}
+                disabled={
+                  !this.doesTicketChange()
+                  || (stateEdited.status === TICKET_STATUSES.REFERRED && !stateEdited.referredTo)
+                  || (requiresWageAmount && isTerminalStatus && !hasWageAmount)
+                }
+              >
+                <FormattedMessage module={MODULE_NAME} id="ticket.updateButton" />
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                startIcon={<Cancel />}
+                onClick={this.goToList}
+              >
+                <FormattedMessage module={MODULE_NAME} id="ticket.cancelButton" />
+              </Button>
+            </Grid>
+          </Grid>
+        )}
+
         <div style={{ display: 'none' }}>
           <TicketPrintTemplate
             ref={(el) => (this.componentRef = el)}
@@ -425,6 +603,8 @@ class EditTicketPage extends Component {
 const mapStateToProps = (state, props) => ({
   submittingMutation: state.grievanceSocialProtection.submittingMutation,
   mutation: state.grievanceSocialProtection.mutation,
+  mutationError: state.grievanceSocialProtection.mutationError,
+  alert: state.core?.alert,
   fetchingTicket: state.grievanceSocialProtection.fetchingTicket,
   errorTicket: state.grievanceSocialProtection.errorTicket,
   fetchedTicket: state.grievanceSocialProtection.fetchedTicket,
@@ -435,15 +615,19 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators(
   {
-    fetchTicket, updateTicket, createTicketComment, journalize,
+    fetchTicket, updateTicket, createTicketComment, journalize, coreAlert,
   },
   dispatch,
 );
 
-export default injectIntl(
-  withTheme(
-    withStyles(styles)(
-      connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+export default withHistory(
+  withModulesManager(
+    injectIntl(
+      withTheme(
+        withStyles(styles)(
+          connect(mapStateToProps, mapDispatchToProps)(EditTicketPage),
+        ),
+      ),
     ),
   ),
 );

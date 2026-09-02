@@ -35,6 +35,52 @@ const CATEGORY_FULL_PROJECTION = () => [
   'validityTo',
 ];
 
+export const PROJECT_HOUSEHOLDS_QUERY = `
+  query GrievanceProjectHouseholds($projectId: String, $first: Int) {
+    projectEligibleGroupBeneficiaries(
+      enrolledInProject: $projectId, isDeleted: false, first: $first
+    ) {
+      edges {
+        node {
+          id
+          jsonExt
+          group { id code head { firstName lastName dob } }
+        }
+      }
+    }
+  }
+`;
+
+export const HOUSEHOLD_MEMBERS_QUERY = `
+  query GrievanceHouseholdMembers($groupId: String, $first: Int) {
+    individual(groupId: $groupId, isDeleted: false, first: $first) {
+      edges {
+        node {
+          id
+          firstName
+          lastName
+          dob
+          jsonExt
+        }
+      }
+    }
+  }
+`;
+
+// Participant json_ext a ticket would get for the selected reporter (district,
+// micro-catchment, project, hotspot, …) — resolved server-side so the intake
+// form can show it before the grievance is saved.
+export const REPORTER_DERIVED_FIELDS_QUERY = `
+  query GrievanceReporterDerivedFields(
+    $reporterType: String!, $reporterId: String!, $projectId: String, $groupBeneficiaryId: String
+  ) {
+    grievanceReporterDerivedFields(
+      reporterType: $reporterType, reporterId: $reporterId,
+      projectId: $projectId, groupBeneficiaryId: $groupBeneficiaryId
+    )
+  }
+`;
+
 export function fetchCategoryForPicker(mm, filters) {
   const payload = formatPageQueryWithCount('category', filters, CATEGORY_FULL_PROJECTION(mm));
   return graphql(payload, 'CATEGORY_CATEGORY');
@@ -65,6 +111,7 @@ export function fetchTicket(mm, filters) {
     'resolution', 'title', 'dateOfIncident', 'dateCreated',
     'attendingStaff {id, username}', 'version', 'isHistory,', 'jsonExt',
     'reporterFirstName', 'reporterLastName', 'reporterDob', 'wageAmount',
+    'durationDays', 'slaState',
   ];
   const payload = formatPageQueryWithCount(
     'tickets',
@@ -103,6 +150,27 @@ export function fetchComments(ticket) {
   return { type: 'COMMENT_COMMENTS', payload: { data: [] } };
 }
 
+// Hand-captured walk-in complainant. The backend stores these on
+// ticket.json_ext['unregistered_reporter'] and ignores them when reporterId is
+// set. See the grievance module README for why walk-ins aren't auto-registered.
+function formatUnregisteredReporterGQL(ticket) {
+  if (ticket.reporter) return '';
+  return [
+    ticket.reporterFirstName ? `reporterFirstName: "${formatGQLString(ticket.reporterFirstName)}"` : '',
+    ticket.reporterLastName ? `reporterLastName: "${formatGQLString(ticket.reporterLastName)}"` : '',
+    ticket.reporterDob ? `reporterDob: "${formatGQLString(ticket.reporterDob)}"` : '',
+    ticket.reporterPhone ? `reporterPhone: "${formatGQLString(ticket.reporterPhone)}"` : '',
+    ticket.reporterNationalId ? `reporterNationalId: "${formatGQLString(ticket.reporterNationalId)}"` : '',
+  ].filter(Boolean).join('\n    ');
+}
+
+// The backend `wageAmount` field is a GraphQL `Decimal` scalar, which only accepts a quoted string
+const formatWageAmountGQL = (wageAmount) => {
+  const value = Number(wageAmount);
+  if (Number.isNaN(value)) return '';
+  return `wageAmount: "${value.toFixed(2)}"`;
+};
+
 export function formatTicketGQL(ticket) {
   return `
     ${ticket.id !== undefined && ticket.id !== null ? `id: "${ticket.id}"` : ''}
@@ -117,7 +185,9 @@ export function formatTicketGQL(ticket) {
       : `reporterId: "${ticket.reporter.id}"`)
     : ''}
     ${!!ticket.reporterType && !!ticket.reporterType ? `reporterType: "${ticket.reporterType}"` : ''}
-    ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
+    ${formatUnregisteredReporterGQL(ticket)}
+    ${ticket.reporterProjectId ? `reporterProjectId: "${formatGQLString(ticket.reporterProjectId)}"` : ''}
+    ${ticket.reporterGroupBeneficiaryId ? `reporterGroupBeneficiaryId: "${formatGQLString(ticket.reporterGroupBeneficiaryId)}"` : ''}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: "${formatGQLString(ticket.status)}"` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
@@ -126,6 +196,7 @@ export function formatTicketGQL(ticket) {
     ${ticket.dateOfIncident ? `dateOfIncident: "${formatGQLString(ticket.dateOfIncident)}"` : ''}
     ${!!ticket.channel && !!ticket.channel ? `channel: "${ticket.channel}"` : ''}
     ${!!ticket.flags && !!ticket.flags ? `flags: "${ticket.flags}"` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? formatWageAmountGQL(ticket.wageAmount) : ''}
   `;
 }
 
@@ -144,11 +215,11 @@ export function formatUpdateTicketGQL(ticket) {
       : `reporterId: "${ticket.reporter.id}"`)
     : ''}
     ${!!ticket.reporter && !!ticket.reporter ? `reporterType: "${ticket.reporterTypeName}"` : ''}
-    ${ticket.nameOfComplainant ? `nameOfComplainant: "${formatGQLString(ticket.nameOfComplainant)}"` : ''}
+    ${formatUnregisteredReporterGQL(ticket)}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: ${formatGQLString(ticket.status)}` : ''}
     ${ticket.referredTo ? `referredTo: "${formatGQLString(ticket.referredTo)}"` : ''}
-    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? `wageAmount: ${ticket.wageAmount}` : ''}
+    ${ticket.wageAmount !== undefined && ticket.wageAmount !== null && ticket.wageAmount !== '' ? formatWageAmountGQL(ticket.wageAmount) : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
     ${ticket.dueDate ? `dueDate: "${formatGQLString(ticket.dueDate)}"` : ''}
     ${ticket.dateSubmitted ? `dateSubmitted: "${formatGQLString(ticket.dateSubmitted)}"` : ''}

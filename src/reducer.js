@@ -10,6 +10,25 @@ import {
   CLEAR, ERROR, REQUEST, SUCCESS,
 } from './utils/action-type';
 
+// Wrap fe-core's mutation dispatch helpers so the store also carries a
+// resolved error (if any) for the current mutation. Pages read `mutationError`
+// on the submittingMutation true->false transition to raise a coreAlert.
+const mutationReq = (state, action) => ({
+  ...dispatchMutationReq(state, action),
+  mutationError: null,
+});
+
+const mutationResp = (state, service, action) => ({
+  ...dispatchMutationResp(state, service, action),
+  mutationError: formatGraphQLError(action.payload),
+});
+
+const mutationErr = (state, action) => ({
+  ...dispatchMutationErr(state, action),
+  submittingMutation: false,
+  mutationError: formatServerError(action.payload),
+});
+
 export const ACTION_TYPE = {
   GET_GRIEVANCE_CONFIGURATION: 'GET_GRIEVANCE_CONFIGURATION',
   MUTATION: 'GRIEVANCE_SOCIAL_PROTECTION_MUTATION',
@@ -46,6 +65,7 @@ function reducer(
 
     submittingMutation: false,
     mutation: {},
+    mutationError: null,
 
     fetchingTicketComments: false,
     fetchedTicketComments: false,
@@ -191,27 +211,27 @@ function reducer(
         grievanceConfig: null,
       };
     case REQUEST(ACTION_TYPE.MUTATION):
-      return dispatchMutationReq(state, action);
+      return mutationReq(state, action);
     case ERROR(ACTION_TYPE.MUTATION):
-      return dispatchMutationErr(state, action);
+      return mutationErr(state, action);
     case SUCCESS(ACTION_TYPE.RESOLVE_BY_COMMENT):
-      return dispatchMutationResp(state, 'resolveGrievanceByComment', action);
+      return mutationResp(state, 'resolveGrievanceByComment', action);
     case SUCCESS(ACTION_TYPE.REOPEN_TICKET):
-      return dispatchMutationResp(state, 'reopenTicket', action);
+      return mutationResp(state, 'reopenTicket', action);
     case 'TICKET_MUTATION_REQ':
-      return dispatchMutationReq(state, action);
+      return mutationReq(state, action);
     case 'TICKET_MUTATION_ERR':
-      return dispatchMutationErr(state, action);
+      return mutationErr(state, action);
     case 'TICKET_CREATE_TICKET_RESP':
-      return dispatchMutationResp(state, 'createTicket', action);
+      return mutationResp(state, 'createTicket', action);
     case 'TICKET_UPDATE_TICKET_RESP':
-      return dispatchMutationResp(state, 'updateTicket', action);
+      return mutationResp(state, 'updateTicket', action);
     case 'TICKET_COMMENT_MUTATION_REQ':
-      return dispatchMutationReq(state, action);
+      return mutationReq(state, action);
     case 'TICKET_COMMENT_MUTATION_ERR':
-      return dispatchMutationErr(state, action);
+      return mutationErr(state, action);
     case 'TICKET_CREATE_COMMENT_RESP':
-      return dispatchMutationResp(state, 'createComment', action);
+      return mutationResp(state, 'createComment', action);
     case REQUEST(ACTION_TYPE.TICKET_EXPORT):
       return {
         ...state,

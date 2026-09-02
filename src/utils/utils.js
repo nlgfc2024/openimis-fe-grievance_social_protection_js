@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import { decodeId } from '@openimis/fe-core';
 
 export function ticketLabel(ticket) {
   if (!ticket) return '';
@@ -12,6 +13,13 @@ export function isBase64Encoded(str) {
   // Base64 encoded strings can only contain characters from [A-Za-z0-9+/=]
   const base64RegExp = /^[A-Za-z0-9+/=]+$/;
   return base64RegExp.test(str);
+}
+
+// Normalise an id that may arrive base64-encoded (relay node id) or already
+// decoded (some pickers decode their own). `decodeId` throws on a bare UUID.
+export function toRawId(id) {
+  if (!id) return null;
+  return isBase64Encoded(id) ? decodeId(id) : id;
 }
 
 export function isEmptyObject(obj) {
