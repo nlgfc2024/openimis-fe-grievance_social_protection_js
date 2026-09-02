@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Autocomplete, useGraphqlQuery, useTranslations, decodeId,
+  Autocomplete, useGraphqlQuery, useTranslations,
 } from '@openimis/fe-core';
 import { PROJECT_HOUSEHOLDS_QUERY } from '../actions';
 import { REPORTER_PICKER_PAGE_SIZE } from '../constants';
+import { toRawId } from '../utils/utils';
 
 // Lists the households (group beneficiaries) enrolled in the selected project.
 // Value is the GroupBeneficiary node; the caller drills into `.group` to pick
@@ -23,7 +24,7 @@ function ProjectHouseholdPicker(props) {
   const { formatMessage } = useTranslations('grievanceSocialProtection');
   const [searchString, setSearchString] = useState('');
 
-  const projectId = project ? decodeId(project.id) : null;
+  const projectId = toRawId(project?.id);
 
   const { isLoading, data, error } = useGraphqlQuery(
     PROJECT_HOUSEHOLDS_QUERY,

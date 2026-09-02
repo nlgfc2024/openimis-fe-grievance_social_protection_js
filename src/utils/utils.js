@@ -11,15 +11,21 @@ export function ticketLabel(ticket) {
 
 export function isBase64Encoded(str) {
   // Base64 encoded strings can only contain characters from [A-Za-z0-9+/=]
-  const base64RegExp = /^[A-Za-z0-9+/=]+$/;
-  return base64RegExp.test(str);
+  // and are padded to a multiple of 4 characters.
+  const base64RegExp = /^[A-Za-z0-9+/]+={0,2}$/;
+  return base64RegExp.test(str) && str.length % 4 === 0;
 }
 
-// Normalise an id that may arrive base64-encoded (relay node id) or already
-// decoded (some pickers decode their own). `decodeId` throws on a bare UUID.
+// Normalise an id that may arrive base64-encoded (relay node id)
 export function toRawId(id) {
   if (!id) return null;
-  return isBase64Encoded(id) ? decodeId(id) : id;
+  if (!isBase64Encoded(id)) return id;
+  try {
+    const decoded = decodeId(id);
+    return decoded || id;
+  } catch (e) {
+    return id;
+  }
 }
 
 export function isEmptyObject(obj) {
