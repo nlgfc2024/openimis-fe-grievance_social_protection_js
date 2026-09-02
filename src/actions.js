@@ -71,8 +71,13 @@ export const HOUSEHOLD_MEMBERS_QUERY = `
 // micro-catchment, project, hotspot, …) — resolved server-side so the intake
 // form can show it before the grievance is saved.
 export const REPORTER_DERIVED_FIELDS_QUERY = `
-  query GrievanceReporterDerivedFields($reporterType: String!, $reporterId: String!) {
-    grievanceReporterDerivedFields(reporterType: $reporterType, reporterId: $reporterId)
+  query GrievanceReporterDerivedFields(
+    $reporterType: String!, $reporterId: String!, $projectId: String, $groupBeneficiaryId: String
+  ) {
+    grievanceReporterDerivedFields(
+      reporterType: $reporterType, reporterId: $reporterId,
+      projectId: $projectId, groupBeneficiaryId: $groupBeneficiaryId
+    )
   }
 `;
 
@@ -181,6 +186,8 @@ export function formatTicketGQL(ticket) {
     : ''}
     ${!!ticket.reporterType && !!ticket.reporterType ? `reporterType: "${ticket.reporterType}"` : ''}
     ${formatUnregisteredReporterGQL(ticket)}
+    ${ticket.reporterProjectId ? `reporterProjectId: "${formatGQLString(ticket.reporterProjectId)}"` : ''}
+    ${ticket.reporterGroupBeneficiaryId ? `reporterGroupBeneficiaryId: "${formatGQLString(ticket.reporterGroupBeneficiaryId)}"` : ''}
     ${ticket.resolution ? `resolution: "${formatGQLString(ticket.resolution)}"` : ''}
     ${ticket.status ? `status: "${formatGQLString(ticket.status)}"` : ''}
     ${ticket.priority ? `priority: "${formatGQLString(ticket.priority)}"` : ''}
