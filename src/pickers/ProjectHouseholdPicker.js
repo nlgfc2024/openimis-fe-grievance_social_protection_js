@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Autocomplete, useGraphqlQuery, useTranslations, decodeId,
+  Autocomplete, useGraphqlQuery, useTranslations,
 } from '@openimis/fe-core';
 import { PROJECT_HOUSEHOLDS_QUERY } from '../actions';
 import { REPORTER_PICKER_PAGE_SIZE } from '../constants';
@@ -23,7 +23,7 @@ function ProjectHouseholdPicker(props) {
   const { formatMessage } = useTranslations('grievanceSocialProtection');
   const [searchString, setSearchString] = useState('');
 
-  const projectId = project ? decodeId(project.id) : null;
+  const projectId = project?.id ?? null;
 
   const { isLoading, data, error } = useGraphqlQuery(
     PROJECT_HOUSEHOLDS_QUERY,

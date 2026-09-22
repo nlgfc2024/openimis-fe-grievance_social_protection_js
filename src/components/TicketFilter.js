@@ -11,10 +11,10 @@ import {
   ControlledField,
   TextInput,
   PublishedComponent,
-  decodeId,
   formatMessage,
 } from '@openimis/fe-core';
 import { MODULE_NAME } from '../constants';
+import { toRawId } from '../utils/utils';
 
 const styles = (theme) => ({
   dialogTitle: theme.dialog.title,
@@ -49,9 +49,9 @@ function TicketFilter({
       {
         id: k,
         value: v,
-        // Guard the cleared case: decodeId(undefined) throws (atob on "undefined"),
-        // so drop the filter (null) instead of decoding a missing id.
-        filter: v?.id ? `${k}: "${decodeId(v.id)}"` : null,
+        // Cleared case drops the filter (null); ids reach here either as relay
+        // node ids or already-raw UUIDs depending on the picker.
+        filter: v?.id ? `${k}: "${toRawId(v.id)}"` : null,
       },
     ]);
   };

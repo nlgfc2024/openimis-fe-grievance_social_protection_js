@@ -113,7 +113,7 @@ class AddTicketPage extends Component {
       // fields from that exact enrolment, not an unrelated first one.
       const { project, household } = this.state;
       ticket.reporterType = 'individual';
-      if (project?.id) ticket.reporterProjectId = toRawId(project.id);
+      if (project?.id) ticket.reporterProjectId = project.id;
       if (household?.id) ticket.reporterGroupBeneficiaryId = toRawId(household.id);
     }
     this.props.createTicket(

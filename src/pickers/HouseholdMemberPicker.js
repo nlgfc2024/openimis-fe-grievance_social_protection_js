@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Autocomplete, useGraphqlQuery, useTranslations, decodeId,
+  Autocomplete, useGraphqlQuery, useTranslations,
 } from '@openimis/fe-core';
 import { HOUSEHOLD_MEMBERS_QUERY } from '../actions';
 import { REPORTER_PICKER_PAGE_SIZE } from '../constants';
+import { toRawId } from '../utils/utils';
 
 // Lists the individuals belonging to a household (group). Value is the
 // Individual node — used as the grievance reporter (reporterType 'individual',
@@ -20,7 +21,7 @@ function HouseholdMemberPicker({
   const { formatMessage } = useTranslations('grievanceSocialProtection');
   const [searchString, setSearchString] = useState('');
 
-  const groupId = group ? decodeId(group.id) : null;
+  const groupId = toRawId(group?.id);
 
   const { isLoading, data, error } = useGraphqlQuery(
     HOUSEHOLD_MEMBERS_QUERY,
