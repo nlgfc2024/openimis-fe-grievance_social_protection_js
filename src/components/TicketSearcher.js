@@ -23,8 +23,10 @@ import {
   CLEARED_STATE_FILTER,
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
+import AddIcon from '@material-ui/icons/Add';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import {
-  MODULE_NAME, RIGHT_TICKET_EDIT, TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
+  MODULE_NAME, RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT,
 } from '../constants';
 import {
   fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
@@ -334,6 +336,12 @@ class TicketSearcher extends Component {
 
   setAppliedFiltersRowStructure = (appliedFiltersRowStructure) => this.setState({ appliedFiltersRowStructure });
 
+  onAdd = () => historyPush(
+    this.props.modulesManager,
+    this.props.history,
+    "grievanceSocialProtection.route.ticket",
+  );
+
   render() {
     const {
       intl,
@@ -343,7 +351,22 @@ class TicketSearcher extends Component {
 
     const count = ticketsPageInfo.totalCount;
     const enableExport = !!this.props.grievanceConfig?.enableExport;
-    const { fields: exportFields, fieldsColumns: exportFieldsColumns } = this.exportFieldsAndColumns();
+    const searcherActions = [
+      {
+        label: formatMessage(intl, MODULE_NAME, "tickets.searcherAddAction"),
+        icon: <AddIcon />,
+        authorized: this.props.rights.includes(RIGHT_TICKET_ADD),
+        variant: "contained",
+        onClick: this.onAdd,
+      },
+      {
+        label: formatMessage(intl, MODULE_NAME, "export.button"),
+        icon: <GetAppIcon />,
+        authorized: enableExport,
+        variant: "outlined",
+        onClick: (params) => this.props.downloadTickets(params),
+      },
+    ];
 
     const filterPane = ({ filters, onChangeFilters }) => (
       <TicketFilter
@@ -387,12 +410,9 @@ class TicketSearcher extends Component {
           rowLocked={this.rowLocked}
           onDoubleClick={(i) => !i.clientMutationId && onDoubleClick(i)}
           reset={this.state.reset}
-          exportable={enableExport}
-          exportFetch={this.props.downloadTickets}
-          exportFields={exportFields}
-          exportFieldsColumns={exportFieldsColumns}
-          exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
-          actionsContributionKey={TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY}
+          enableActionButtons
+          searcherActionsPosition="header-right"
+          searcherActions={searcherActions}
           isCustomFiltering={this.isAdvancedCriteriaEnabled()}
           moduleName="grievance_social_protection"
           objectType="Ticket"
