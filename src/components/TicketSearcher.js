@@ -24,9 +24,8 @@ import {
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
-import GetAppIcon from '@material-ui/icons/GetApp';
 import {
-  MODULE_NAME, RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT,
+  MODULE_NAME, RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT, TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
 } from '../constants';
 import {
   fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
@@ -351,6 +350,7 @@ class TicketSearcher extends Component {
 
     const count = ticketsPageInfo.totalCount;
     const enableExport = !!this.props.grievanceConfig?.enableExport;
+    const { fields: exportFields, fieldsColumns: exportFieldsColumns } = this.exportFieldsAndColumns();
     const searcherActions = [
       {
         label: formatMessage(intl, MODULE_NAME, "tickets.searcherAddAction"),
@@ -358,13 +358,6 @@ class TicketSearcher extends Component {
         authorized: this.props.rights.includes(RIGHT_TICKET_ADD),
         variant: "contained",
         onClick: this.onAdd,
-      },
-      {
-        label: formatMessage(intl, MODULE_NAME, "export.button"),
-        icon: <GetAppIcon />,
-        authorized: enableExport,
-        variant: "outlined",
-        onClick: (params) => this.props.downloadTickets(params),
       },
     ];
 
@@ -410,9 +403,15 @@ class TicketSearcher extends Component {
           rowLocked={this.rowLocked}
           onDoubleClick={(i) => !i.clientMutationId && onDoubleClick(i)}
           reset={this.state.reset}
-          enableActionButtons
-          searcherActionsPosition="header-right"
+          exportable={enableExport}
+          exportFetch={this.props.downloadTickets}
+          exportFields={exportFields}
+          exportFieldsColumns={exportFieldsColumns}
+          exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
+          actionsContributionKey={TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY}
+          enableHeaderActionButtons
           searcherActions={searcherActions}
+          downloadWithIconButton
           isCustomFiltering={this.isAdvancedCriteriaEnabled()}
           moduleName="grievance_social_protection"
           objectType="Ticket"
