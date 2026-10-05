@@ -23,8 +23,9 @@ import {
   CLEARED_STATE_FILTER,
 } from '@openimis/fe-core';
 import EditIcon from '@material-ui/icons/Edit';
+import AddIcon from '@material-ui/icons/Add';
 import {
-  MODULE_NAME, RIGHT_TICKET_EDIT, TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
+  MODULE_NAME, RIGHT_TICKET_ADD, RIGHT_TICKET_EDIT, TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY,
 } from '../constants';
 import {
   fetchTicketSummaries, fetchGrievanceConfiguration, downloadTickets,
@@ -334,6 +335,12 @@ class TicketSearcher extends Component {
 
   setAppliedFiltersRowStructure = (appliedFiltersRowStructure) => this.setState({ appliedFiltersRowStructure });
 
+  onAdd = () => historyPush(
+    this.props.modulesManager,
+    this.props.history,
+    "grievanceSocialProtection.route.ticket",
+  );
+
   render() {
     const {
       intl,
@@ -344,6 +351,15 @@ class TicketSearcher extends Component {
     const count = ticketsPageInfo.totalCount;
     const enableExport = !!this.props.grievanceConfig?.enableExport;
     const { fields: exportFields, fieldsColumns: exportFieldsColumns } = this.exportFieldsAndColumns();
+    const searcherActions = [
+      {
+        label: formatMessage(intl, MODULE_NAME, "tickets.searcherAddAction"),
+        icon: <AddIcon />,
+        authorized: this.props.rights.includes(RIGHT_TICKET_ADD),
+        variant: "contained",
+        onClick: this.onAdd,
+      },
+    ];
 
     const filterPane = ({ filters, onChangeFilters }) => (
       <TicketFilter
@@ -393,6 +409,9 @@ class TicketSearcher extends Component {
           exportFieldsColumns={exportFieldsColumns}
           exportFieldLabel={formatMessage(intl, MODULE_NAME, 'export.button')}
           actionsContributionKey={TICKET_SEARCHER_ACTION_CONTRIBUTION_KEY}
+          enableHeaderActionButtons
+          searcherActions={searcherActions}
+          downloadWithIconButton
           isCustomFiltering={this.isAdvancedCriteriaEnabled()}
           moduleName="grievance_social_protection"
           objectType="Ticket"
