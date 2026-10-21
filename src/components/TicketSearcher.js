@@ -162,6 +162,18 @@ class TicketSearcher extends Component {
 
   searchResultColumns = () => this.props.grievanceConfig?.searchResultColumns ?? [];
 
+  canEditTickets = () => this.props.rights.includes(RIGHT_TICKET_EDIT);
+
+  columnWidths = () => [
+    ...this.searchResultColumns().map((_, index) => {
+      if (index === 0) return '22%';
+      if (index === 1) return '16%';
+      return undefined;
+    }),
+    this.isShowHistory() ? '8%' : undefined,
+    ...(this.canEditTickets() ? ['48px'] : []),
+  ];
+
   exportFieldsAndColumns = () => {
     const fields = [];
     const fieldsColumns = {};
@@ -275,6 +287,7 @@ class TicketSearcher extends Component {
   headers = () => [
     ...this.searchResultColumns().map((column) => column.label),
     this.isShowHistory() ? 'tickets.version' : '',
+    ...(this.canEditTickets() ? ['emptyLabel'] : []),
   ];
 
   sorts = () => [
@@ -291,7 +304,7 @@ class TicketSearcher extends Component {
       (ticket) => (this.isShowHistory() ? ticket?.version : null),
     ];
 
-    if (this.props.rights.includes(RIGHT_TICKET_EDIT)) {
+    if (this.canEditTickets()) {
       formatters.push((ticket) => (
         <Tooltip title={formatMessage(this.props.intl, MODULE_NAME, 'editButtonTooltip')}>
           <IconButton
@@ -397,6 +410,7 @@ class TicketSearcher extends Component {
           filtersToQueryParams={this.filtersToQueryParams}
           defaultOrderBy="-dateCreated"
           headers={this.headers}
+          columnWidths={this.columnWidths()}
           itemFormatters={this.itemFormatters}
           sorts={this.sorts}
           rowDisabled={this.rowDisabled}
