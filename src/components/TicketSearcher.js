@@ -426,6 +426,7 @@ class TicketSearcher extends Component {
           enableHeaderActionButtons
           searcherActions={searcherActions}
           downloadWithIconButton
+          compactLayout
           isCustomFiltering={this.isAdvancedCriteriaEnabled()}
           moduleName="grievance_social_protection"
           objectType="Ticket"
