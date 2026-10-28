@@ -23,6 +23,25 @@ import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
 import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
 import ReporterDerivedPanel from '../components/ReporterDerivedPanel';
+import GeographicProjectPicker from '../pickers/GeographicProjectPicker';
+import ProjectHotspotPicker from '../pickers/ProjectHotspotPicker';
+
+const GEOGRAPHY_LEVELS = [
+  { key: 'district', picker: 'location.MwDistrictPicker' },
+  { key: 'ta', picker: 'location.MwTAPicker' },
+];
+
+const PROJECT_LOCATION_LEVELS = ['district', 'ta', 'micro_catchment', 'hotspot'];
+
+const parseObjectConfig = (value) => {
+  if (!value) return {};
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return {};
+  }
+};
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -40,6 +59,10 @@ class AddTicketPage extends Component {
       stateEdited: {},
       grievantType: null,
       benefitPlan: null,
+      district: null,
+      ta: null,
+      microCatchment: null,
+      hotspot: null,
       project: null,
       household: null,
       isSaved: false,
@@ -141,6 +164,10 @@ class AddTicketPage extends Component {
     this.setState({
       grievantType: value,
       benefitPlan: null,
+      district: null,
+      ta: null,
+      microCatchment: null,
+      hotspot: null,
       project: null,
       household: null,
       individualEntryMode: 'existing',
@@ -162,12 +189,53 @@ class AddTicketPage extends Component {
 
   updateBenefitPlan = (field, value) => {
     this.updateAttribute('reporter', null);
-    this.setState({ benefitPlan: value, project: null, household: null });
+    this.setState({
+      benefitPlan: value,
+      district: null,
+      ta: null,
+      microCatchment: null,
+      hotspot: null,
+      project: null,
+      household: null,
+    });
+  };
+
+  updateGeography = (levelKey, value) => {
+    const levelIndex = GEOGRAPHY_LEVELS.findIndex(({ key }) => key === levelKey);
+    const clearedChildren = GEOGRAPHY_LEVELS.slice(levelIndex + 1).reduce(
+      (result, { key }) => ({ ...result, [key]: null }),
+      {},
+    );
+    this.updateAttribute('reporter', null);
+    this.setState({
+      [levelKey]: value,
+      ...clearedChildren,
+      project: null,
+      household: null,
+    });
+  };
+
+  updateProjectLocation = (levelKey, value) => {
+    const levelIndex = PROJECT_LOCATION_LEVELS.indexOf(levelKey);
+    const clearedProjectChildren = PROJECT_LOCATION_LEVELS.slice(levelIndex + 1).reduce(
+      (result, key) => ({ ...result, [key === 'micro_catchment' ? 'microCatchment' : key]: null }),
+      {},
+    );
+    this.updateAttribute('reporter', null);
+    this.setState({
+      [levelKey === 'micro_catchment' ? 'microCatchment' : levelKey]: value,
+      ...clearedProjectChildren,
+      project: null,
+      household: null,
+    });
   };
 
   updateProject = (value) => {
     this.updateAttribute('reporter', null);
-    this.setState({ project: value, household: null });
+    this.setState({
+      project: value,
+      household: null,
+    });
   };
 
   updateHousehold = (value) => {
@@ -188,6 +256,10 @@ class AddTicketPage extends Component {
       stateEdited,
       grievantType,
       benefitPlan,
+      district,
+      ta,
+      microCatchment,
+      hotspot,
       project,
       household,
       isSaved,
@@ -196,6 +268,32 @@ class AddTicketPage extends Component {
     } = this.state;
 
     const phaseLabel = formatMessage(intl, MODULE_NAME, 'ticket.phase');
+    const geographyConfig = parseObjectConfig(this.props.grievanceConfig?.geographyFilters);
+    const geographyEnabled = geographyConfig.enabled && geographyConfig.intake_enabled;
+    const hasSeparatedGeography = !!geographyConfig.project_location;
+    const useSeparatedGeography = geographyEnabled && hasSeparatedGeography;
+    const projectLocationLevels = geographyConfig.project_location?.levels || [];
+    const projectLocationValues = {
+      district,
+      ta,
+      micro_catchment: microCatchment,
+      hotspot,
+    };
+    const requiredProjectLocationSelected = projectLocationLevels.every((level) => (
+      !level.required || !!projectLocationValues[level.key]
+    ));
+    const configuredLevels = GEOGRAPHY_LEVELS.filter(({ key }) => (
+      geographyConfig.levels?.some((level) => level.key === key)
+    ));
+    const selectedGeography = { district, ta };
+    const requiredGeographySelected = configuredLevels.every(({ key }) => {
+      const levelConfig = geographyConfig.levels.find((level) => level.key === key);
+      return !levelConfig?.required || !!selectedGeography[key];
+    });
+    const deepestSelectedLocation = [...configuredLevels]
+      .reverse()
+      .map(({ key }) => selectedGeography[key])
+      .find(Boolean) ?? null;
 
     // Claims that carry an amount (category workflow `requires_amount`) — the
     // complainant states it when filing; not mandatory at intake.
@@ -335,17 +433,93 @@ class AddTicketPage extends Component {
                         readOnly={isSaved}
                       />
                     </Grid>
+                    {benefitPlan && !useSeparatedGeography && (
+                      geographyEnabled && configuredLevels.map(({ key, picker }, index) => {
+                        const levelConfig = geographyConfig.levels.find((level) => level.key === key);
+                        const parentLocation = index > 0
+                          ? selectedGeography[configuredLevels[index - 1].key]
+                          : null;
+                        return (
+                          <Grid item xs={3} className={classes.item} key={key}>
+                            <PublishedComponent
+                              pubRef={picker}
+                              withNull
+                              withLabel
+                              required={!!levelConfig?.required}
+                              parentLocation={parentLocation}
+                              value={selectedGeography[key]}
+                              onChange={(value) => this.updateGeography(key, value)}
+                              readOnly={isSaved || (index > 0 && !parentLocation)}
+                            />
+                          </Grid>
+                        );
+                      })
+                    )}
+                    {benefitPlan && useSeparatedGeography
+                      && projectLocationLevels.map((level) => {
+                        if (level.key === 'micro_catchment') {
+                          return (
+                            <Grid item xs={3} className={classes.item} key={level.key}>
+                              <PublishedComponent
+                                pubRef="location.MicroCatchmentPicker"
+                                withNull
+                                withLabel
+                                required={!!level.required}
+                                district={district}
+                                value={microCatchment}
+                                onChange={(value) => this.updateProjectLocation(level.key, value)}
+                                readOnly={isSaved || !district}
+                              />
+                            </Grid>
+                          );
+                        }
+                        if (level.key === 'hotspot') {
+                          return (
+                            <Grid item xs={3} className={classes.item} key={level.key}>
+                              <ProjectHotspotPicker
+                                microCatchment={microCatchment}
+                                required={!!level.required}
+                                value={hotspot}
+                                onChange={(value) => this.updateProjectLocation(level.key, value)}
+                                readOnly={isSaved || !microCatchment}
+                              />
+                            </Grid>
+                          );
+                        }
+                        const isTa = level.key === 'ta';
+                        return (
+                          <Grid item xs={3} className={classes.item} key={level.key}>
+                            <PublishedComponent
+                              pubRef={isTa ? 'location.MwTAPicker' : 'location.MwDistrictPicker'}
+                              withNull
+                              withLabel
+                              required={!!level.required}
+                              parentLocation={isTa ? district : null}
+                              value={projectLocationValues[level.key]}
+                              onChange={(value) => this.updateProjectLocation(level.key, value)}
+                              readOnly={isSaved || (isTa && !district)}
+                            />
+                          </Grid>
+                        );
+                      })}
                     {benefitPlan && (
                       <Grid item xs={3} className={classes.item}>
-                        <PublishedComponent
-                          pubRef="projectSocialProtection.ProjectPicker"
+                        <GeographicProjectPicker
                           benefitPlanId={decodeId(benefitPlan.id)}
+                          parentLocation={geographyConfig.filter_projects
+                            ? (useSeparatedGeography ? (ta || district) : deepestSelectedLocation)
+                            : null}
+                          microCatchment={useSeparatedGeography ? microCatchment : null}
+                          hotspot={useSeparatedGeography ? hotspot : null}
                           multiple={false}
                           withLabel
                           label={formatMessage(intl, MODULE_NAME, 'ticket.project')}
                           value={project}
                           onChange={(v) => this.updateProject(v)}
-                          readOnly={isSaved}
+                          readOnly={isSaved
+                            || (geographyEnabled && (useSeparatedGeography
+                              ? !requiredProjectLocationSelected
+                              : !requiredGeographySelected))}
                         />
                       </Grid>
                     )}

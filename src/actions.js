@@ -20,6 +20,7 @@ const GRIEVANCE_CONFIGURATION_PROJECTION = () => [
   'ticketStatuses{code, label, initial, terminal, requiresReferralEntity}',
   'referralEntities',
   'participantFields{key, label, source}',
+  'geographyFilters',
   'searchFilters',
   'searchResultColumns{key, label}',
   'sla',
@@ -38,7 +39,9 @@ const CATEGORY_FULL_PROJECTION = () => [
 export const PROJECT_HOUSEHOLDS_QUERY = `
   query GrievanceProjectHouseholds($projectId: String, $first: Int) {
     projectEligibleGroupBeneficiaries(
-      enrolledInProject: $projectId, isDeleted: false, first: $first
+      enrolledInProject: $projectId,
+      isDeleted: false,
+      first: $first
     ) {
       edges {
         node {
