@@ -23,42 +23,14 @@ import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
 import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
 import ReporterDerivedPanel from '../components/ReporterDerivedPanel';
-import GeographicProjectPicker from '../pickers/GeographicProjectPicker';
-import ProjectHotspotPicker from '../pickers/ProjectHotspotPicker';
-
-const LOCATION_LEVELS = {
-  district: { picker: 'location.MwDistrictPicker' },
-  ta: {
-    picker: 'location.MwTAPicker',
-    parent: 'district',
-    parentProps: (parent) => ({ parentLocation: parent }),
-  },
-  micro_catchment: {
-    picker: 'location.MicroCatchmentPicker',
-    parent: 'district',
-    parentProps: (parent) => ({ district: parent }),
-  },
-  hotspot: { parent: 'micro_catchment' },
-};
-
-const EMPTY_LOCATIONS = {
-  district: null,
-  ta: null,
-  micro_catchment: null,
-  hotspot: null,
-};
-
-const parseObjectConfig = (value) => {
-  if (!value) return {};
-  if (typeof value === 'object') return value;
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Unable to parse grievance location filters', error);
-    return {};
-  }
-};
+import GrievanceLocationFilters from '../components/GrievanceLocationFilters';
+import {
+  areRequiredLocationsSelected,
+  clearDownstreamLocations,
+  EMPTY_SELECTED_LOCATIONS,
+  getProjectLocationFilters,
+  parseLocationFilters,
+} from '../utils/locationFilters';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -76,7 +48,8 @@ class AddTicketPage extends Component {
       stateEdited: {},
       grievantType: null,
       benefitPlan: null,
-      selectedLocations: { ...EMPTY_LOCATIONS },
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
+      locationConfig: parseLocationFilters(props.grievanceConfig?.locationFilters),
       project: null,
       household: null,
       isSaved: false,
@@ -89,6 +62,18 @@ class AddTicketPage extends Component {
 
   // eslint-disable-next-line no-unused-vars
   componentDidUpdate(prevPops, prevState, snapshort) {
+    if (prevPops.grievanceConfig?.locationFilters
+      !== this.props.grievanceConfig?.locationFilters) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        locationConfig: parseLocationFilters(
+          this.props.grievanceConfig?.locationFilters,
+        ),
+        selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
+        project: null,
+        household: null,
+      });
+    }
     if (prevPops.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
       const { intl, mutationError } = this.props;
@@ -178,7 +163,7 @@ class AddTicketPage extends Component {
     this.setState({
       grievantType: value,
       benefitPlan: null,
-      selectedLocations: { ...EMPTY_LOCATIONS },
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
       project: null,
       household: null,
       individualEntryMode: 'existing',
@@ -202,21 +187,21 @@ class AddTicketPage extends Component {
     this.updateAttribute('reporter', null);
     this.setState({
       benefitPlan: value,
-      selectedLocations: { ...EMPTY_LOCATIONS },
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
       project: null,
       household: null,
     });
   };
 
   updateLocation = (levelKey, value) => {
-    const locationConfig = parseObjectConfig(this.props.grievanceConfig?.locationFilters);
-    const levels = locationConfig.levels || [];
-    const levelIndex = levels.findIndex(({ key }) => key === levelKey);
+    const { levels } = this.state.locationConfig;
     this.updateAttribute('reporter', null);
     this.setState((state) => ({
-      selectedLocations: levels.slice(levelIndex + 1).reduce(
-        (locations, { key }) => ({ ...locations, [key]: null }),
-        { ...state.selectedLocations, [levelKey]: value },
+      selectedLocations: clearDownstreamLocations(
+        levels,
+        state.selectedLocations,
+        levelKey,
+        value,
       ),
       project: null,
       household: null,
@@ -225,10 +210,7 @@ class AddTicketPage extends Component {
 
   updateProject = (value) => {
     this.updateAttribute('reporter', null);
-    this.setState({
-      project: value,
-      household: null,
-    });
+    this.setState({ project: value, household: null });
   };
 
   updateHousehold = (value) => {
@@ -250,6 +232,7 @@ class AddTicketPage extends Component {
       grievantType,
       benefitPlan,
       selectedLocations,
+      locationConfig,
       project,
       household,
       isSaved,
@@ -258,30 +241,16 @@ class AddTicketPage extends Component {
     } = this.state;
 
     const phaseLabel = formatMessage(intl, MODULE_NAME, 'ticket.phase');
-    const locationConfig = parseObjectConfig(this.props.grievanceConfig?.locationFilters);
     const locationEnabled = !!locationConfig.enabled;
-    const configuredLevels = (locationConfig.levels || [])
-      .filter(({ key }) => LOCATION_LEVELS[key]);
-    const requiredLocationsSelected = configuredLevels.every(({ key, required }) => (
-      !required || !!selectedLocations[key]
-    ));
-    const deepestSelectedLevel = [...configuredLevels]
-      .reverse()
-      .find(({ key }) => selectedLocations[key]);
-    const deepestSelectedLocation = deepestSelectedLevel
-      ? selectedLocations[deepestSelectedLevel.key]
-      : null;
-    const projectLocationFilters = {
-      parentLocation: ['district', 'ta'].includes(deepestSelectedLevel?.key)
-        ? deepestSelectedLocation
-        : null,
-      microCatchment: deepestSelectedLevel?.key === 'micro_catchment'
-        ? deepestSelectedLocation
-        : null,
-      hotspot: deepestSelectedLevel?.key === 'hotspot'
-        ? deepestSelectedLocation
-        : null,
-    };
+    const configuredLevels = locationConfig.levels || [];
+    const requiredLocationsSelected = areRequiredLocationsSelected(
+      configuredLevels,
+      selectedLocations,
+    );
+    const projectLocationFilters = getProjectLocationFilters(
+      configuredLevels,
+      selectedLocations,
+    );
 
     // Claims that carry an amount (category workflow `requires_amount`) — the
     // complainant states it when filing; not mandatory at intake.
@@ -421,46 +390,19 @@ class AddTicketPage extends Component {
                         readOnly={isSaved}
                       />
                     </Grid>
-                    {benefitPlan && locationEnabled && configuredLevels.map((level) => {
-                      const levelDefinition = LOCATION_LEVELS[level.key];
-                      const parentLocation = levelDefinition.parent
-                        ? selectedLocations[levelDefinition.parent]
-                        : null;
-                      if (level.key === 'hotspot') {
-                        return (
-                          <Grid item xs={3} className={classes.item} key={level.key}>
-                            <ProjectHotspotPicker
-                              microCatchment={parentLocation}
-                              required={!!level.required}
-                              value={selectedLocations[level.key]}
-                              onChange={(value) => this.updateLocation(level.key, value)}
-                              readOnly={isSaved || !parentLocation}
-                            />
-                          </Grid>
-                        );
-                      }
-                      const parentProps = levelDefinition.parentProps
-                        ? levelDefinition.parentProps(parentLocation)
-                        : {};
-                      return (
-                        <Grid item xs={3} className={classes.item} key={level.key}>
-                          <PublishedComponent
-                            pubRef={levelDefinition.picker}
-                            withNull
-                            withLabel
-                            required={!!level.required}
-                            value={selectedLocations[level.key]}
-                            onChange={(value) => this.updateLocation(level.key, value)}
-                            readOnly={isSaved || (!!levelDefinition.parent && !parentLocation)}
-                            // eslint-disable-next-line react/jsx-props-no-spreading
-                            {...parentProps}
-                          />
-                        </Grid>
-                      );
-                    })}
+                    {benefitPlan && locationEnabled && (
+                      <GrievanceLocationFilters
+                        classes={classes}
+                        levels={configuredLevels}
+                        selectedLocations={selectedLocations}
+                        onChange={this.updateLocation}
+                        readOnly={isSaved}
+                      />
+                    )}
                     {benefitPlan && (
                       <Grid item xs={3} className={classes.item}>
-                        <GeographicProjectPicker
+                        <PublishedComponent
+                          pubRef="projectSocialProtection.ProjectPicker"
                           benefitPlanId={decodeId(benefitPlan.id)}
                           parentLocation={projectLocationFilters.parentLocation}
                           microCatchment={projectLocationFilters.microCatchment}

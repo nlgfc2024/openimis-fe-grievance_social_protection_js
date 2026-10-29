@@ -39,9 +39,7 @@ const CATEGORY_FULL_PROJECTION = () => [
 export const PROJECT_HOUSEHOLDS_QUERY = `
   query GrievanceProjectHouseholds($projectId: String, $first: Int) {
     projectEligibleGroupBeneficiaries(
-      enrolledInProject: $projectId,
-      isDeleted: false,
-      first: $first
+      enrolledInProject: $projectId, isDeleted: false, first: $first
     ) {
       edges {
         node {
