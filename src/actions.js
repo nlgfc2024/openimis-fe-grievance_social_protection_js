@@ -20,7 +20,7 @@ const GRIEVANCE_CONFIGURATION_PROJECTION = () => [
   'ticketStatuses{code, label, initial, terminal, requiresReferralEntity}',
   'referralEntities',
   'participantFields{key, label, source}',
-  'geographyFilters',
+  'locationFilters',
   'searchFilters',
   'searchResultColumns{key, label}',
   'sla',
