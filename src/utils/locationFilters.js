@@ -24,21 +24,21 @@ export const parseLocationFilters = (value) => {
 };
 
 export const getProjectLocationFilters = (levels, selectedLocations) => {
-  const deepestSelectedLevel = [...levels]
-    .reverse()
-    .find(({ key }) => selectedLocations[key]);
-  const selected = deepestSelectedLevel
-    ? selectedLocations[deepestSelectedLevel.key]
+  const configuredKeys = new Set(levels.map(({ key }) => key));
+  const deepestSelectedKey = ['hotspot', 'micro_catchment', 'ta', 'district']
+    .find((key) => configuredKeys.has(key) && selectedLocations[key]);
+  const selected = deepestSelectedKey
+    ? selectedLocations[deepestSelectedKey]
     : null;
 
   return {
-    parentLocation: ['district', 'ta'].includes(deepestSelectedLevel?.key)
+    parentLocation: ['district', 'ta'].includes(deepestSelectedKey)
       ? selected
       : null,
-    microCatchment: deepestSelectedLevel?.key === 'micro_catchment'
+    microCatchment: deepestSelectedKey === 'micro_catchment'
       ? selected
       : null,
-    hotspot: deepestSelectedLevel?.key === 'hotspot' ? selected : null,
+    hotspot: deepestSelectedKey === 'hotspot' ? selected : null,
   };
 };
 

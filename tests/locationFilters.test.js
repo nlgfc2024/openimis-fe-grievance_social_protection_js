@@ -7,6 +7,7 @@ const { code } = transformFileSync(source, {
   presets: [['@babel/preset-env', { modules: 'commonjs' }]],
 });
 const moduleUnderTest = { exports: {} };
+// eslint-disable-next-line no-new-func
 Function('exports', 'module', 'require', code)(
   moduleUnderTest.exports,
   moduleUnderTest,
@@ -85,6 +86,13 @@ assert.deepStrictEqual(
 assert.deepStrictEqual(
   getProjectLocationFilters(jobsNowLevels, { district, ta }),
   { parentLocation: ta, microCatchment: null, hotspot: null },
+);
+assert.deepStrictEqual(
+  getProjectLocationFilters(
+    [...pwpLevels].reverse(),
+    { district, micro_catchment: microCatchment, hotspot },
+  ),
+  { parentLocation: null, microCatchment: null, hotspot },
 );
 
 console.log('locationFilters tests passed');
