@@ -23,6 +23,14 @@ import GrievantTypePicker from '../pickers/GrievantTypePicker';
 import ProjectHouseholdPicker from '../pickers/ProjectHouseholdPicker';
 import HouseholdMemberPicker from '../pickers/HouseholdMemberPicker';
 import ReporterDerivedPanel from '../components/ReporterDerivedPanel';
+import GrievanceLocationFilters from '../components/GrievanceLocationFilters';
+import {
+  areRequiredLocationsSelected,
+  clearDownstreamLocations,
+  EMPTY_SELECTED_LOCATIONS,
+  getProjectLocationFilters,
+  parseLocationFilters,
+} from '../utils/locationFilters';
 
 const styles = (theme) => ({
   paper: theme.paper.paper,
@@ -40,6 +48,8 @@ class AddTicketPage extends Component {
       stateEdited: {},
       grievantType: null,
       benefitPlan: null,
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
+      locationConfig: parseLocationFilters(props.grievanceConfig?.locationFilters),
       project: null,
       household: null,
       isSaved: false,
@@ -52,6 +62,18 @@ class AddTicketPage extends Component {
 
   // eslint-disable-next-line no-unused-vars
   componentDidUpdate(prevPops, prevState, snapshort) {
+    if (prevPops.grievanceConfig?.locationFilters
+      !== this.props.grievanceConfig?.locationFilters) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        locationConfig: parseLocationFilters(
+          this.props.grievanceConfig?.locationFilters,
+        ),
+        selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
+        project: null,
+        household: null,
+      });
+    }
     if (prevPops.submittingMutation && !this.props.submittingMutation) {
       this.props.journalize(this.props.mutation);
       const { intl, mutationError } = this.props;
@@ -141,6 +163,7 @@ class AddTicketPage extends Component {
     this.setState({
       grievantType: value,
       benefitPlan: null,
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
       project: null,
       household: null,
       individualEntryMode: 'existing',
@@ -162,7 +185,27 @@ class AddTicketPage extends Component {
 
   updateBenefitPlan = (field, value) => {
     this.updateAttribute('reporter', null);
-    this.setState({ benefitPlan: value, project: null, household: null });
+    this.setState({
+      benefitPlan: value,
+      selectedLocations: { ...EMPTY_SELECTED_LOCATIONS },
+      project: null,
+      household: null,
+    });
+  };
+
+  updateLocation = (levelKey, value) => {
+    const { levels } = this.state.locationConfig;
+    this.updateAttribute('reporter', null);
+    this.setState((state) => ({
+      selectedLocations: clearDownstreamLocations(
+        levels,
+        state.selectedLocations,
+        levelKey,
+        value,
+      ),
+      project: null,
+      household: null,
+    }));
   };
 
   updateProject = (value) => {
@@ -188,6 +231,8 @@ class AddTicketPage extends Component {
       stateEdited,
       grievantType,
       benefitPlan,
+      selectedLocations,
+      locationConfig,
       project,
       household,
       isSaved,
@@ -196,6 +241,16 @@ class AddTicketPage extends Component {
     } = this.state;
 
     const phaseLabel = formatMessage(intl, MODULE_NAME, 'ticket.phase');
+    const locationEnabled = !!locationConfig.enabled;
+    const configuredLevels = locationConfig.levels || [];
+    const requiredLocationsSelected = areRequiredLocationsSelected(
+      configuredLevels,
+      selectedLocations,
+    );
+    const projectLocationFilters = getProjectLocationFilters(
+      configuredLevels,
+      selectedLocations,
+    );
 
     // Claims that carry an amount (category workflow `requires_amount`) — the
     // complainant states it when filing; not mandatory at intake.
@@ -335,17 +390,30 @@ class AddTicketPage extends Component {
                         readOnly={isSaved}
                       />
                     </Grid>
+                    {benefitPlan && locationEnabled && (
+                      <GrievanceLocationFilters
+                        classes={classes}
+                        levels={configuredLevels}
+                        selectedLocations={selectedLocations}
+                        onChange={this.updateLocation}
+                        readOnly={isSaved}
+                      />
+                    )}
                     {benefitPlan && (
                       <Grid item xs={3} className={classes.item}>
                         <PublishedComponent
                           pubRef="projectSocialProtection.ProjectPicker"
                           benefitPlanId={decodeId(benefitPlan.id)}
+                          parentLocation={projectLocationFilters.parentLocation}
+                          microCatchment={projectLocationFilters.microCatchment}
+                          hotspot={projectLocationFilters.hotspot}
                           multiple={false}
                           withLabel
                           label={formatMessage(intl, MODULE_NAME, 'ticket.project')}
                           value={project}
                           onChange={(v) => this.updateProject(v)}
-                          readOnly={isSaved}
+                          readOnly={isSaved
+                            || (locationEnabled && !requiredLocationsSelected)}
                         />
                       </Grid>
                     )}
