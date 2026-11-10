@@ -395,6 +395,7 @@ class AddTicketPage extends Component {
                         classes={classes}
                         levels={configuredLevels}
                         selectedLocations={selectedLocations}
+                        benefitPlanId={decodeId(benefitPlan.id)}
                         onChange={this.updateLocation}
                         readOnly={isSaved}
                       />

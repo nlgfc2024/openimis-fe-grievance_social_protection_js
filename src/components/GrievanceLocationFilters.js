@@ -15,6 +15,7 @@ export const LOCATION_LEVELS = {
     picker: 'location.MicroCatchmentPicker',
     parent: 'district',
     parentProps: (parent) => ({ district: parent }),
+    contextProps: ({ benefitPlanId }) => ({ benefitPlanId }),
   },
   hotspot: {
     picker: 'projectSocialProtection.HotspotPicker',
@@ -27,6 +28,7 @@ function GrievanceLocationFilters({
   classes,
   levels,
   selectedLocations,
+  benefitPlanId,
   onChange,
   readOnly,
 }) {
@@ -35,9 +37,12 @@ function GrievanceLocationFilters({
     const parent = definition.parent
       ? selectedLocations[definition.parent]
       : null;
-    const parentProps = definition.parentProps
-      ? definition.parentProps(parent)
-      : {};
+    const pickerProps = {
+      ...(definition.parentProps ? definition.parentProps(parent) : {}),
+      ...(definition.contextProps
+        ? definition.contextProps({ benefitPlanId })
+        : {}),
+    };
 
     return (
       <Grid item xs={3} className={classes.item} key={level.key}>
@@ -50,7 +55,7 @@ function GrievanceLocationFilters({
           onChange={(value) => onChange(level.key, value)}
           readOnly={readOnly || (!!definition.parent && !parent)}
           // eslint-disable-next-line react/jsx-props-no-spreading
-          {...parentProps}
+          {...pickerProps}
         />
       </Grid>
     );
